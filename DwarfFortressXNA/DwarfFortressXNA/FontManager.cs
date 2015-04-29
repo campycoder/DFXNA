@@ -1,56 +1,54 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DwarfFortressXNA
 {
     public class FontManager
     {
-        public ColorManager dfColor;
-        public char[] codepage = new char[] {' ', '☺', '☻', '♥', '♦', '♣', '♠', '•', '◘', '○', '◙', '♂', '♀', '♪', '♫', '☼',
-                                             '►', '◄', '↕', '‼', '¶', '§', '▬', '↨', '↑', '↓', '→', '←', '∟', '↔', '▲', '▼',
-                                             ' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',','-', '.', '/',
-                                             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
-                                             '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-                                             'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']','^', '_',
-                                             '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-                                             'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', '⌂',
-                                             'Ç', 'ü', 'é', 'â', 'ä', 'à', 'å', 'ç', 'ê', 'ë', 'è', 'ï', 'î', 'ì', 'Ä', 'Å',
-                                             'É', 'æ', 'Æ', 'ô', 'ö', 'ò', 'û', 'ù', 'ÿ', 'Ö', 'Ü', '¢', '£', '¥', '₧', 'ƒ',
-                                             'á', 'í', 'ó', 'ú', 'ñ', 'Ñ', 'ª', 'º', '¿', '⌐', '¬', '½', '¼', '¡', '«', '»',
-                                             '░', '▒', '▓', '│', '┤', '╡', '╢', '╖', '╕', '╣', '║', '╗', '╝', '╜', '╛', '┐',
-                                             '└', '┴', '┬', '├', '─', '┼', '╞', '╟', '╚', '╔', '╩', '╦', '╠', '═', '╬', '╧',
-                                             '╨', '╤', '╥', '╙', '╘', '╒', '╓', '╫', '╪', '┘', '┌', '█', '▄', '▌', '▐', '▀',
-                                             'α', 'ß', 'Γ', 'π', 'Σ', 'σ', 'µ', 'τ', 'Φ', 'Θ', 'Ω', 'δ', '∞', 'φ', 'ε', '∩',
-                                             '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈', '°', '∙', '·', '√', 'ⁿ', '²', '■', ' '};
+        public ColorManager DfColor;
+        public char[] Codepage =
+        {' ', '☺', '☻', '♥', '♦', '♣', '♠', '•', '◘', '○', '◙', '♂', '♀', '♪', '♫', '☼',
+            '►', '◄', '↕', '‼', '¶', '§', '▬', '↨', '↑', '↓', '→', '←', '∟', '↔', '▲', '▼',
+            ' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',','-', '.', '/',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+            '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+            'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']','^', '_',
+            '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+            'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', '⌂',
+            'Ç', 'ü', 'é', 'â', 'ä', 'à', 'å', 'ç', 'ê', 'ë', 'è', 'ï', 'î', 'ì', 'Ä', 'Å',
+            'É', 'æ', 'Æ', 'ô', 'ö', 'ò', 'û', 'ù', 'ÿ', 'Ö', 'Ü', '¢', '£', '¥', '₧', 'ƒ',
+            'á', 'í', 'ó', 'ú', 'ñ', 'Ñ', 'ª', 'º', '¿', '⌐', '¬', '½', '¼', '¡', '«', '»',
+            '░', '▒', '▓', '│', '┤', '╡', '╢', '╖', '╕', '╣', '║', '╗', '╝', '╜', '╛', '┐',
+            '└', '┴', '┬', '├', '─', '┼', '╞', '╟', '╚', '╔', '╩', '╦', '╠', '═', '╬', '╧',
+            '╨', '╤', '╥', '╙', '╘', '╒', '╓', '╫', '╪', '┘', '┌', '█', '▄', '▌', '▐', '▀',
+            'α', 'ß', 'Γ', 'π', 'Σ', 'σ', 'µ', 'τ', 'Φ', 'Θ', 'Ω', 'δ', '∞', 'φ', 'ε', '∩',
+            '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈', '°', '∙', '·', '√', 'ⁿ', '²', '■', ' '};
         public FontManager()
         {
-            dfColor = new ColorManager();
+            DfColor = new ColorManager();
         }
 
         public void DrawString(string toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
-            for (int i = 0; i < toDraw.Length;i++ )
+            for (var i = 0; i < toDraw.Length;i++ )
             {
-                this.DrawCharacter(toDraw[i], spriteBatch, font, new Vector2(position.X + i, position.Y), colorPair);
+                DrawCharacter(toDraw[i], spriteBatch, font, new Vector2(position.X + i, position.Y), colorPair);
             }
         }
 
         public void DrawCharacter(char toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
-            Vector2 backSpot = this.GetPositionFromCharacter('█');
-            Vector2 characterSpot = this.GetPositionFromCharacter(toDraw);
-            spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)backSpot.X * 8, (int)backSpot.Y * 12, 8, 12), colorPair.background);
-            spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)characterSpot.X * 8, (int)characterSpot.Y * 12, 8, 12), colorPair.foreground);
+            var backSpot = GetPositionFromCharacter('█');
+            var characterSpot = GetPositionFromCharacter(toDraw);
+            spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)backSpot.X * 8, (int)backSpot.Y * 12, 8, 12), colorPair.Background);
+            spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)characterSpot.X * 8, (int)characterSpot.Y * 12, 8, 12), colorPair.Foreground);
         }
 
         public Vector2 GetPositionFromCharacter(char character)
         {
-            int rowX = 0;
-            int rowY = 0;
+            var rowX = 0;
+            var rowY = 0;
             /*for(int i = 0; i < 256;i++)
             {
                 if(character == codepage[i])
@@ -59,15 +57,15 @@ namespace DwarfFortressXNA
                    rowY = (int)Math.Floor((double)i / 16);
                 }
             }*/
-            if((int)character >= 0x20 && (int)character < 0x80)
+            if(character >= 0x20 && character < 0x80)
             {
-                rowX = (int)character % 16;
-                rowY = (int)Math.Floor((double)((int)character / 16));
+                rowX = character % 16;
+                rowY = (int)Math.Floor((double)(character / 16));
             }
             else
             {
                 //Ugly switch statement for those things unsolveable by convential (i.e. midnight) math
-                switch(character)
+                switch (character)
                 {
                     case '■':
                         rowX = 14;
@@ -689,8 +687,6 @@ namespace DwarfFortressXNA
                         break;
                     case '☺':
                         rowX = 1;
-                        break;
-                    default:
                         break;
                 }
             }

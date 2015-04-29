@@ -30,28 +30,28 @@ namespace DwarfFortressXNA
 
     public class RawFile
     {
-        public string filename;
+        public string Filename;
 
-        public RawType type;
+        public RawType Type;
 
-        public List<string> tokensRaw;
+        public List<string> TokensRaw;
 
         public RawFile(string path)
         {
-            tokensRaw = new List<string>();
-            string line = "";
+            TokensRaw = new List<string>();
+            string line;
             if (!File.Exists(path)) throw new Exception("Raw file " + path + " does not exist!");
-            StreamReader file = new StreamReader(path, Encoding.UTF8, true);
-            filename = file.ReadLine();
+            var file = new StreamReader(path, Encoding.UTF8, true);
+            Filename = file.ReadLine();
             file.ReadLine();
-            string typeS = file.ReadLine();
-            while (!typeS.StartsWith("[OBJECT") && !file.EndOfStream) typeS = file.ReadLine();
-            if (!Enum.TryParse<RawType>(typeS.Substring(8, typeS.Length - 9), out type)) throw new Exception("Invalid object token " + typeS.Substring(8, typeS.Length - 9) + "!");
+            var typeS = file.ReadLine();
+            while (typeS != null && (!typeS.StartsWith("[OBJECT") && !file.EndOfStream)) typeS = file.ReadLine();
+            if (typeS != null && !Enum.TryParse(typeS.Substring(8, typeS.Length - 9), out Type)) throw new Exception("Invalid object token " + typeS.Substring(8, typeS.Length - 9) + "!");
             file.ReadLine();
             while((line = file.ReadLine()) != null)
             {
                 line = line.Replace("\t", "");
-                if (line.Length > 0 && line[0] == '[') tokensRaw.Add(line);
+                if (line.Length > 0 && line[0] == '[') TokensRaw.Add(line);
             }
             ParseStringsIntoTokens();
         }
@@ -59,24 +59,22 @@ namespace DwarfFortressXNA
         //Seperating this out because god this is really ugly.
         public void ParseStringsIntoTokens()
         {
-            switch(this.type)
+            switch(Type)
             {
                 case RawType.LANGUAGE:
-                    DwarfFortressMono.languageManager.ParseFromTokens(tokensRaw);
+                    DwarfFortressMono.LanguageManager.ParseFromTokens(TokensRaw);
                     break;
                 case RawType.MATERIAL_TEMPLATE:
                 case RawType.INORGANIC:
                 case RawType.PLANT:
-                    DwarfFortressMono.materialManager.ParseFromTokens(tokensRaw);
-                    break;
-                default:
+                    DwarfFortressMono.MaterialManager.ParseFromTokens(TokensRaw);
                     break;
             }
         }
 
         public static string StripTokenEnding(string token)
         {
-            for(int i = 0;i < token.Length;i++)
+            for(var i = 0;i < token.Length;i++)
             {
                 if (token[i] == ']')
                 {
@@ -88,13 +86,7 @@ namespace DwarfFortressXNA
 
         public static int NumberOfTokens(string tokenLine)
         {
-            int count = 0;
-            for(int i = 0;i < tokenLine.Length;i++)
-            {
-                if (tokenLine[i] == '[') count++;
-            }
-            return count;
+            return tokenLine.Count(t => t == '[');
         }
-       
     }
 }

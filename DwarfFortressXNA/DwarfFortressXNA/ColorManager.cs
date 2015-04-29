@@ -1,67 +1,66 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DwarfFortressXNA
 {
 
     public struct ColorPair
     {
-        public Color foreground;
-        public Color background;
+        public Color Foreground;
+        public Color Background;
         public ColorPair(Color fore, Color back)
         {
-            this.foreground = fore;
-            this.background = back;
+            Foreground = fore;
+            Background = back;
         }
     }
     public class ColorManager
     {
-        public static Color black;
-        public static Color blue;
-        public static Color green;
-        public static Color cyan;
-        public static Color red;
-        public static Color magenta;
-        public static Color brown;
-        public static Color light_grey;
-        public static Color dark_grey;
-        public static Color light_blue;
-        public static Color light_green;
-        public static Color light_cyan;
-        public static Color light_red;
-        public static Color light_magenta;
-        public static Color yellow;
-        public static Color white;
+        public static Color Black;
+        public static Color Blue;
+        public static Color Green;
+        public static Color Cyan;
+        public static Color Red;
+        public static Color Magenta;
+        public static Color Brown;
+        public static Color LightGrey;
+        public static Color DarkGrey;
+        public static Color LightBlue;
+        public static Color LightGreen;
+        public static Color LightCyan;
+        public static Color LightRed;
+        public static Color LightMagenta;
+        public static Color Yellow;
+        public static Color White;
 
-        public static List<Color> colorList;
+        public static List<Color> ColorList;
 
         public ColorManager()
         {
-            colorList = new List<Color>();
-            colorList.Add(new Color(0,0,0));
-            colorList.Add(new Color(0,0,128));
-            colorList.Add(new Color(0,128,0));
-            colorList.Add(new Color(0,128,128));
-            colorList.Add(new Color(128,0,0));
-            colorList.Add(new Color(128,0,128));
-            colorList.Add(new Color(128,128,0));
-            colorList.Add(new Color(192, 192, 192));
-            colorList.Add(new Color(128, 128, 128));
-            colorList.Add(new Color(0,0,255));
-            colorList.Add(new Color(0,255,0));
-            colorList.Add(new Color(0,255,255));
-            colorList.Add(new Color(255,0,0));
-            colorList.Add(new Color(255,0,255));
-            colorList.Add(new Color(255,255,0));
-            colorList.Add(new Color(255,255,255));
+            ColorList = new List<Color>
+            {
+                new Color(0, 0, 0),
+                new Color(0, 0, 128),
+                new Color(0, 128, 0),
+                new Color(0, 128, 128),
+                new Color(128, 0, 0),
+                new Color(128, 0, 128),
+                new Color(128, 128, 0),
+                new Color(192, 192, 192),
+                new Color(128, 128, 128),
+                new Color(0, 0, 255),
+                new Color(0, 255, 0),
+                new Color(0, 255, 255),
+                new Color(255, 0, 0),
+                new Color(255, 0, 255),
+                new Color(255, 255, 0),
+                new Color(255, 255, 255)
+            };
         }
 
         public ColorPair GetPairFromTriad(int fore, int back, int foreb)
         {
-            return new ColorPair(colorList[fore + (foreb * 8)], colorList[back]);
+            return new ColorPair(ColorList[fore + (foreb * 8)], ColorList[back]);
         }
     }
 }

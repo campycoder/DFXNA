@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,100 +21,100 @@ namespace DwarfFortressXNA
     /// 
     public class DwarfFortressMono : Game
     {
-        GraphicsDeviceManager graphics;
+        readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D font;
-        public static Random random;
+        public static Random Random;
 
-        public bool paused = false;
-        public bool pdebounce = false;
+        public bool Paused = false;
+        public bool Pdebounce = false;
 
-        int selection = 0;
-        bool arrowDeb = false;
+        int selection;
+        bool arrowDeb;
 
-        public static FontManager fontManager;
-        public static LanguageManager languageManager;
-        public static MaterialManager materialManager;
-        public static SoundManager soundManager;
-        public static ConfigManager configManager;
+        public static FontManager FontManager;
+        public static LanguageManager LanguageManager;
+        public static MaterialManager MaterialManager;
+        public static SoundManager SoundManager;
+        public static ConfigManager ConfigManager;
 
 
-        public GameState gameState = GameState.MENU;
+        public GameState GameState = GameState.MENU;
 
-        public static int ROWS = 25;
-        public static int COLS = 80;
+        public static int Rows = 25;
+        public static int Cols = 80;
 
-        public static int MAP_HEIGHT = ROWS * 2;
-        public static int MAP_WIDTH = COLS * 2;
+        public static int MapHeight = Rows * 2;
+        public static int MapWidth = Cols * 2;
 
-        public int cursorX = 1;
-        public int cursorY = 1;
+        public int CursorX = 1;
+        public int CursorY = 1;
 
-        public int cursorBlinkTimer = 20;
-        public bool cursorOn = true;
+        public int CursorBlinkTimer = 20;
+        public bool CursorOn = true;
 
-        public Material[,] materialMap = new Material[MAP_WIDTH,MAP_HEIGHT];
+        public Material[,] MaterialMap = new Material[MapWidth,MapHeight];
 
-        int frames = 0;
-        float elapsed = 0;
-        int fps = 0;
-        string randomName;
+        int frames;
+        float elapsed;
+        int fps;
         public DwarfFortressMono()
-            : base()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            fontManager = new FontManager();
-            languageManager = new LanguageManager();
-            materialManager = new MaterialManager();
-            soundManager = new SoundManager();
-            configManager = new ConfigManager();
-            configManager.LoadConfigFiles();
-            COLS = configManager.GetConfigValueAsInt("WINDOWEDX");
-            ROWS = configManager.GetConfigValueAsInt("WINDOWEDY");
-            soundManager.OnLoad(this.Content);
-            this.Window.AllowUserResizing = true;
-            this.Window.ClientSizeChanged += new EventHandler<EventArgs>(HandleResize);
-            random = new Random();
-            graphics.PreferredBackBufferHeight = (ROWS * 12);
-            graphics.PreferredBackBufferWidth = (COLS * 8);
-            this.TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 10);
-            this.Window.Title = "Dwarf Fortress";
-            RawFile rawFile = new RawFile("./Raw/Objects/language_words.txt");
-            RawFile rawFileH = new RawFile("./Raw/Objects/language_HUMAN.txt");
-            RawFile rawFileD = new RawFile("./Raw/Objects/language_DWARF.txt");
-            RawFile rawFileG = new RawFile("./Raw/Objects/language_GOBLIN.txt");
-            RawFile rawFileS = new RawFile("./Raw/Objects/language_SYM.txt");
-            RawFile rawFileMT = new RawFile("./Raw/Objects/material_template_default.txt");
-            RawFile rawFileIG = new RawFile("./Raw/Objects/inorganic_stone_gem.txt");
-            RawFile rawFileIL = new RawFile("./Raw/Objects/inorganic_stone_layer.txt");
-            RawFile rawFileIM = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
-            RawFile rawFileIS = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
-            RawFile rawFileIT = new RawFile("./Raw/Objects/inorganic_metal.txt");
-            List<Material> materials = new List<Material>(materialManager.inorganicMaterialList.Values);
-            for (int x = 0; x < MAP_WIDTH; x++)
+            FontManager = new FontManager();
+            LanguageManager = new LanguageManager();
+            MaterialManager = new MaterialManager();
+            SoundManager = new SoundManager();
+            ConfigManager = new ConfigManager();
+            ConfigManager.LoadConfigFiles();
+            Cols = ConfigManager.GetConfigValueAsInt("WINDOWEDX");
+            Rows = ConfigManager.GetConfigValueAsInt("WINDOWEDY");
+            SoundManager.OnLoad(Content);
+            Window.AllowUserResizing = true;
+            Window.ClientSizeChanged += HandleResize;
+            Random = new Random();
+            graphics.PreferredBackBufferHeight = (Rows * 12);
+            graphics.PreferredBackBufferWidth = (Cols * 8);
+            TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 10);
+            Window.Title = "Dwarf Fortress";
+// ReSharper disable UnusedVariable
+            var rawFile = new RawFile("./Raw/Objects/language_words.txt");
+            var rawFileH = new RawFile("./Raw/Objects/language_HUMAN.txt");
+            var rawFileD = new RawFile("./Raw/Objects/language_DWARF.txt");
+            var rawFileG = new RawFile("./Raw/Objects/language_GOBLIN.txt");
+            var rawFileS = new RawFile("./Raw/Objects/language_SYM.txt");
+            var rawFileMt = new RawFile("./Raw/Objects/material_template_default.txt");
+            var rawFileIg = new RawFile("./Raw/Objects/inorganic_stone_gem.txt");
+            var rawFileIl = new RawFile("./Raw/Objects/inorganic_stone_layer.txt");
+            var rawFileIm = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
+            var rawFileIs = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
+            var rawFileIt = new RawFile("./Raw/Objects/inorganic_metal.txt");
+// ReSharper restore UnusedVariable
+            var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
+            for (var x = 0; x < MapWidth; x++)
             {
-                for(int y = 0; y < MAP_HEIGHT;y++)
+                for(var y = 0; y < MapHeight;y++)
                 {
-                    Material material = materials[random.Next(materials.Count)];
-                    materialMap[x, y] = material;
+                    var material = materials[Random.Next(materials.Count)];
+                    MaterialMap[x, y] = material;
                 }
             }
         }
 
         public void HandleResize(object sender, EventArgs e)
         {
-            COLS = (int)Math.Floor((double)this.Window.ClientBounds.Width / 8);
-            ROWS = (int)Math.Floor((double)this.Window.ClientBounds.Height / 12);
-            if(configManager.GetConfigValueAsBool("BLACK_SPACE"))
+            Cols = (int)Math.Floor((double)Window.ClientBounds.Width / 8);
+            Rows = (int)Math.Floor((double)Window.ClientBounds.Height / 12);
+            if(ConfigManager.GetConfigValueAsBool("BLACK_SPACE"))
             {
-                graphics.PreferredBackBufferHeight = ROWS * 12;
-                graphics.PreferredBackBufferWidth = COLS * 8;
+                graphics.PreferredBackBufferHeight = Rows * 12;
+                graphics.PreferredBackBufferWidth = Cols * 8;
                 graphics.ApplyChanges();
-                if (cursorX > COLS - 2) cursorX = COLS - 2;
-                if (cursorX < 1) cursorX = 1;
-                if (cursorY > ROWS - 2) cursorY = ROWS - 2;
-                if (cursorY < 1) cursorY = 1;
+                if (CursorX > Cols - 2) CursorX = Cols - 2;
+                if (CursorX < 1) CursorX = 1;
+                if (CursorY > Rows - 2) CursorY = Rows - 2;
+                if (CursorY < 1) CursorY = 1;
             }  
         }
 
@@ -127,9 +126,7 @@ namespace DwarfFortressXNA
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-            //var form = (System.Windows.Forms.Form)System.Windows.Forms.Control.FromHandle(this.Window.Handle);
-            //form.Location = new System.Drawing.Point(0, 0);
+            Console.WriteLine("Starting up!");
             base.Initialize();
         }
 
@@ -142,10 +139,9 @@ namespace DwarfFortressXNA
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
             //font = this.Content.Load<Texture2D>("./Data/curses_640x300");
             font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/curses_640x300.png", FileMode.Open));
-            soundManager.PlaySong("TITLE_SONG");
+            SoundManager.PlaySong("TITLE_SONG");
         }
 
         /// <summary>
@@ -154,8 +150,7 @@ namespace DwarfFortressXNA
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
-            soundManager.StopCurrentSong();
+            SoundManager.StopCurrentSong();
         }
 
         /// <summary>
@@ -174,59 +169,56 @@ namespace DwarfFortressXNA
                 elapsed = 0.0f;
             }
 
-            
-
-            // TODO: Add your update logic here
-            if(gameState == GameState.PLAYING)
+            if(GameState == GameState.PLAYING)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !pdebounce)
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Pdebounce)
                 {
-                    paused = !paused;
-                    pdebounce = true;
+                    Paused = !Paused;
+                    Pdebounce = true;
                 }
 
-                if (Keyboard.GetState().IsKeyUp(Keys.Space) && Keyboard.GetState().IsKeyUp(Keys.G) && pdebounce)
+                if (Keyboard.GetState().IsKeyUp(Keys.Space) && Keyboard.GetState().IsKeyUp(Keys.G) && Pdebounce)
                 {
-                    pdebounce = false;
+                    Pdebounce = false;
                 }
                 if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) GameStateChange(GameState.MENU);
 
-                if(Keyboard.GetState().IsKeyDown(Keys.G) && !pdebounce)
+                if(Keyboard.GetState().IsKeyDown(Keys.G) && !Pdebounce)
                 {
-                    List<Material> materials = new List<Material>(materialManager.inorganicMaterialList.Values);
-                    for (int x = 0; x < MAP_WIDTH; x++)
+                    var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
+                    for (var x = 0; x < MapWidth; x++)
                     {
-                        for (int y = 0; y < MAP_HEIGHT; y++)
+                        for (var y = 0; y < MapHeight; y++)
                         {
-                            Material material = materials[random.Next(materials.Count)];
-                            materialMap[x, y] = material;
+                            var material = materials[Random.Next(materials.Count)];
+                            MaterialMap[x, y] = material;
                         }
                     }
-                    pdebounce = true;
+                    Pdebounce = true;
                 }
 
-                if (cursorOn) cursorBlinkTimer--;
-                else cursorBlinkTimer++;
-                if (cursorBlinkTimer <= 0 || cursorBlinkTimer >= 20) cursorOn = !cursorOn;
+                if (CursorOn) CursorBlinkTimer--;
+                else CursorBlinkTimer++;
+                if (CursorBlinkTimer <= 0 || CursorBlinkTimer >= 20) CursorOn = !CursorOn;
 
-                if(Keyboard.GetState().IsKeyDown(Keys.Down) && cursorY < ROWS - 2 && !arrowDeb)
+                if(Keyboard.GetState().IsKeyDown(Keys.Down) && CursorY < Rows - 2 && !arrowDeb)
                 {
-                    cursorY++;
+                    CursorY++;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Up) && cursorY > 1 && !arrowDeb)
+                if (Keyboard.GetState().IsKeyDown(Keys.Up) && CursorY > 1 && !arrowDeb)
                 {
-                    cursorY--;
+                    CursorY--;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Right) && cursorX < COLS - 2 && !arrowDeb)
+                if (Keyboard.GetState().IsKeyDown(Keys.Right) && CursorX < Cols - 2 && !arrowDeb)
                 {
-                    cursorX++;
+                    CursorX++;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Left) && cursorX > 1 && !arrowDeb)
+                if (Keyboard.GetState().IsKeyDown(Keys.Left) && CursorX > 1 && !arrowDeb)
                 {
-                    cursorX--;
+                    CursorX--;
                 }
             }
-            if(gameState == GameState.MENU)
+            if(GameState == GameState.MENU)
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 0) GameStateChange(GameState.PLAYING);
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 1) Exit();
@@ -247,11 +239,11 @@ namespace DwarfFortressXNA
 
         public void GameStateChange(GameState stateToChange)
         {
-            if (stateToChange == this.gameState) return;
-            soundManager.StopCurrentSong();
-            if (stateToChange == GameState.MENU) soundManager.PlaySong("TITLE_SONG");
-            if (stateToChange == GameState.PLAYING) soundManager.PlaySong("GAME_SONG");
-            this.gameState = stateToChange;
+            if (stateToChange == GameState) return;
+            SoundManager.StopCurrentSong();
+            if (stateToChange == GameState.MENU) SoundManager.PlaySong("TITLE_SONG");
+            if (stateToChange == GameState.PLAYING) SoundManager.PlaySong("GAME_SONG");
+            GameState = stateToChange;
             selection = 0;
         }
 
@@ -263,38 +255,37 @@ namespace DwarfFortressXNA
         {
             GraphicsDevice.Clear(Color.Black);
             frames++;
-            // TODO: Add your drawing code here
             spriteBatch.Begin();
 
-            if(gameState == GameState.PLAYING)
+            if(GameState == GameState.PLAYING)
             {
-                for (int i = 0; i < COLS; i++)
+                for (var i = 0; i < Cols; i++)
                 {
-                    for (int j = 0; j < ROWS; j++)
+                    for (var j = 0; j < Rows; j++)
                     {
-                        if (j == 0 || j == ROWS - 1 || i == 0 || i == COLS - 1) fontManager.DrawCharacter('█', spriteBatch, font, new Vector2(i, j), fontManager.dfColor.GetPairFromTriad(0, 0, 1));
+                        if (j == 0 || j == Rows - 1 || i == 0 || i == Cols - 1) FontManager.DrawCharacter('█', spriteBatch, font, new Vector2(i, j), FontManager.DfColor.GetPairFromTriad(0, 0, 1));
                     }
                 }
-                for (int x = 1; x < COLS - 1; x++)
+                for (var x = 1; x < Cols - 1; x++)
                 {
-                    for (int y = 1; y < ROWS - 1; y++)
+                    for (var y = 1; y < Rows - 1; y++)
                     {
-                        if (x >= MAP_WIDTH || y >= MAP_HEIGHT) fontManager.DrawCharacter(random.Next(2) == 1 ? '≈' : '~', spriteBatch, font, new Vector2(x, y), fontManager.dfColor.GetPairFromTriad(7, 0, 1));
-                        else fontManager.DrawCharacter(materialMap[x, y].itemSymbol, spriteBatch, font, new Vector2(x, y), materialMap[x, y].GetItemDisplayColor());
+                        if (x >= MapWidth || y >= MapHeight) FontManager.DrawCharacter(Random.Next(2) == 1 ? '≈' : '~', spriteBatch, font, new Vector2(x, y), FontManager.DfColor.GetPairFromTriad(7, 0, 1));
+                        else FontManager.DrawCharacter(MaterialMap[x, y].ItemSymbol, spriteBatch, font, new Vector2(x, y), MaterialMap[x, y].GetItemDisplayColor());
                     }
                 }
-                if (cursorOn) fontManager.DrawCharacter('X', spriteBatch, font, new Vector2(cursorX, cursorY), fontManager.dfColor.GetPairFromTriad(6, 0, 1));
-                fontManager.DrawString("  Dwarf Fortress  ", spriteBatch, font, new Vector2(COLS/2 - 9, 0), fontManager.dfColor.GetPairFromTriad(0, 7, 0));
-                if (paused) fontManager.DrawString("*PAUSED*", spriteBatch, font, new Vector2(1, 0), fontManager.dfColor.GetPairFromTriad(3, 2, 1));
-                if(configManager.GetConfigValueAsBool("FPS")) fontManager.DrawString("FPS: " + fps, spriteBatch, font, new Vector2(COLS -  (COLS/4), 0), fontManager.dfColor.GetPairFromTriad(2, 2, 1));
+                if (CursorOn) FontManager.DrawCharacter('X', spriteBatch, font, new Vector2(CursorX, CursorY), FontManager.DfColor.GetPairFromTriad(6, 0, 1));
+                FontManager.DrawString("  Dwarf Fortress  ", spriteBatch, font, new Vector2(Cols/2 - 9, 0), FontManager.DfColor.GetPairFromTriad(0, 7, 0));
+                if (Paused) FontManager.DrawString("*PAUSED*", spriteBatch, font, new Vector2(1, 0), FontManager.DfColor.GetPairFromTriad(3, 2, 1));
+                if(ConfigManager.GetConfigValueAsBool("FPS")) FontManager.DrawString("FPS: " + fps, spriteBatch, font, new Vector2(Cols -  (Cols/4), 0), FontManager.DfColor.GetPairFromTriad(2, 2, 1));
             }
-            else if(gameState == GameState.MENU)
+            else if(GameState == GameState.MENU)
             {
-                fontManager.DrawString("Slaves to Armok:  God of Blood", spriteBatch, font, new Vector2(COLS/2 - 15, 2), fontManager.dfColor.GetPairFromTriad(4, 0, 1));
-                fontManager.DrawString("Chapter II: Dwarf Fortress", spriteBatch, font, new Vector2(COLS/2 - 12, 3), fontManager.dfColor.GetPairFromTriad(7, 0, 1));
-                fontManager.DrawString("(XNA EDITION)", spriteBatch, font, new Vector2(COLS/2 - 6, 5), fontManager.dfColor.GetPairFromTriad(6, 6, 1));
-                fontManager.DrawString("Look at Something", spriteBatch, font, new Vector2(COLS/2 - 8, 10), fontManager.dfColor.GetPairFromTriad(7, 0, 1 - selection));
-                fontManager.DrawString("Exit", spriteBatch, font, new Vector2(COLS/2 - 1, 12), fontManager.dfColor.GetPairFromTriad(7, 0, selection));
+                FontManager.DrawString("Slaves to Armok:  God of Blood", spriteBatch, font, new Vector2(Cols/2 - 15, 2), FontManager.DfColor.GetPairFromTriad(4, 0, 1));
+                FontManager.DrawString("Chapter II: Dwarf Fortress", spriteBatch, font, new Vector2(Cols/2 - 12, 3), FontManager.DfColor.GetPairFromTriad(7, 0, 1));
+                FontManager.DrawString("(XNA EDITION)", spriteBatch, font, new Vector2(Cols/2 - 6, 5), FontManager.DfColor.GetPairFromTriad(6, 6, 1));
+                FontManager.DrawString("Look at Something", spriteBatch, font, new Vector2(Cols/2 - 8, 10), FontManager.DfColor.GetPairFromTriad(7, 0, 1 - selection));
+                FontManager.DrawString("Exit", spriteBatch, font, new Vector2(Cols/2 - 1, 12), FontManager.DfColor.GetPairFromTriad(7, 0, selection));
             }
             
             spriteBatch.End();

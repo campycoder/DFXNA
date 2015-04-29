@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DwarfFortressXNA
 {
     public class LanguageManager
     {
 
-        public Dictionary<string, Word> wordList;
-        public Dictionary<string, List<string>> symbolList;
-        public Dictionary<string, Dictionary<string, string>> translationList;
+        public Dictionary<string, Word> WordList;
+        public Dictionary<string, List<string>> SymbolList;
+        public Dictionary<string, Dictionary<string, string>> TranslationList;
         public LanguageManager()
         {
-            wordList = new Dictionary<string, Word>();
-            symbolList = new Dictionary<string, List<string>>();
-            translationList = new Dictionary<string, Dictionary<string, string>>();
+            WordList = new Dictionary<string, Word>();
+            SymbolList = new Dictionary<string, List<string>>();
+            TranslationList = new Dictionary<string, Dictionary<string, string>>();
         }
 
         //Direct to the proper function!
@@ -35,48 +33,48 @@ namespace DwarfFortressXNA
             }
         }
 
-        private void ParseAsWords(List<string> words)
+        private void ParseAsWords(IList<string> words)
         {
-            List<string> currentBuffer = new List<string>();
-            for(int i = 0; i < words.Count;i++)
+            var currentBuffer = new List<string>();
+            foreach (var t in words)
             {
-                if(words[i].StartsWith("[WORD:") && currentBuffer.Count > 0)
+                if(t.StartsWith("[WORD:") && currentBuffer.Count > 0)
                 {
-                    Word word = new Word(currentBuffer);
-                    this.wordList.Add(word.id, word);
+                    var word = new Word(currentBuffer);
+                    WordList.Add(word.Id, word);
                     currentBuffer.Clear();
-                    currentBuffer.Add(words[i]);
+                    currentBuffer.Add(t);
                 }
-                else currentBuffer.Add(words[i]);
+                else currentBuffer.Add(t);
             }
         }
 
-        private void ParseAsTranslation(List<string> translation)
+        private void ParseAsTranslation(IList<string> translation)
         {
-            string id = translation[0].Remove(0, 13).Replace("]", "");
-            Dictionary<string, string> translationDic = new Dictionary<string,string>();
+            var id = translation[0].Remove(0, 13).Replace("]", "");
+            var translationDic = new Dictionary<string,string>();
             translation.Remove(translation[0]);
-            for(int i = 0;i < translation.Count;i++)
+            foreach (var t in translation)
             {
-                if (!translation[i].StartsWith("[T_WORD:")) continue;
-                string[] split = translation[i].Split(new char[] { ':' });
-                string real = split[1];
-                string trans = split[2].Replace("]", "");
+                if (!t.StartsWith("[T_WORD:")) continue;
+                var split = t.Split(new[] { ':' });
+                var real = split[1];
+                var trans = split[2].Replace("]", "");
                 translationDic.Add(real, trans);
             }
-            translationList.Add(id, translationDic);
+            TranslationList.Add(id, translationDic);
         }
 
-        private void ParseAsSymbols(List<string> symbols)
+        private void ParseAsSymbols(IList<string> symbols)
         {
-            List<string> currentBuffer = new List<string>();
-            for (int i = 0; i < symbols.Count; i++)
+            var currentBuffer = new List<string>();
+            foreach (var t in symbols)
             {
-                if (symbols[i].StartsWith("[SYMBOL:") && currentBuffer.Count > 0)
+                if (t.StartsWith("[SYMBOL:") && currentBuffer.Count > 0)
                 {
-                    string id = currentBuffer[0].Remove(0, 8).Replace("]", "");
+                    var id = currentBuffer[0].Remove(0, 8).Replace("]", "");
                     currentBuffer.Remove(currentBuffer[0]);
-                    for(int j = 0; j < currentBuffer.Count;j++)
+                    for(var j = 0; j < currentBuffer.Count;j++)
                     {
                         if (!currentBuffer[j].StartsWith("[S_WORD:"))
                         {
@@ -85,11 +83,11 @@ namespace DwarfFortressXNA
                         }
                         else currentBuffer[j] = currentBuffer[j].Remove(0, 8).Replace("]", "");
                     }
-                    this.symbolList.Add(id, currentBuffer);
+                    SymbolList.Add(id, currentBuffer);
                     currentBuffer.Clear();
-                    currentBuffer.Add(symbols[i]);
+                    currentBuffer.Add(t);
                 }
-                else currentBuffer.Add(symbols[i]);
+                else currentBuffer.Add(t);
             }
             Console.WriteLine("done!");
         }
@@ -97,20 +95,15 @@ namespace DwarfFortressXNA
         {
             toTranslate = toTranslate.ToUpper();
             language = language.ToUpper();
-            if (!translationList.ContainsKey(language))
+            if (!TranslationList.ContainsKey(language))
             {
                 throw new Exception("Bad language " + language + " requested!");
-                return "";
             }
-            else
+            if (!TranslationList[language].ContainsKey(toTranslate))
             {
-                if (!translationList[language].ContainsKey(toTranslate))
-                {
-                    throw new Exception("Nonexistant word " + toTranslate + " requested in language " + language + "!");
-                    return "";
-                }
-                else return translationList[language][toTranslate];
+                throw new Exception("Nonexistant word " + toTranslate + " requested in language " + language + "!");
             }
+            return TranslationList[language][toTranslate];
         }
     }
 }

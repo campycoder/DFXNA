@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DwarfFortressXNA
 {
@@ -22,13 +20,13 @@ namespace DwarfFortressXNA
             NULL
         }
 
-        public string singular, plural;
-        public List<NounUsage> usages;
+        public string Singular, Plural;
+        public List<NounUsage> Usages;
         public Noun(string singular, string plural, List<NounUsage> usages)
         {
-            this.singular = singular;
-            this.plural = plural;
-            this.usages = usages;
+            Singular = singular;
+            Plural = plural;
+            Usages = usages;
         }
     }
 
@@ -41,27 +39,27 @@ namespace DwarfFortressXNA
             REAR_COMPOUND_ADJ,
             NULL
         }
-        public string adj;
-        public List<AdjectiveUsage> usages;
+        public string Adj;
+        public List<AdjectiveUsage> Usages;
         public Adjective(string adj, List<AdjectiveUsage> usages)
         {
-            this.adj = adj;
-            this.usages = usages;
+            Adj = adj;
+            Usages = usages;
         }
     }
 
     public class Verb
     {
-        public string present_first, present_third, preterite, past_part, present_part;
-        public bool standard;
-        public Verb(string present_first, string present_third, string preterite, string past_part, string present_part, bool standard)
+        public string PresentFirst, PresentThird, Preterite, PastPart, PresentPart;
+        public bool Standard;
+        public Verb(string presentFirst, string presentThird, string preterite, string pastPart, string presentPart, bool standard)
         {
-            this.present_first = present_first;
-            this.present_third = present_third;
-            this.preterite = preterite;
-            this.past_part = past_part;
-            this.present_part = present_part;
-            this.standard = standard;
+            PresentFirst = presentFirst;
+            PresentThird = presentThird;
+            Preterite = preterite;
+            PastPart = pastPart;
+            PresentPart = presentPart;
+            Standard = standard;
         }
     }
 
@@ -73,36 +71,36 @@ namespace DwarfFortressXNA
             THE_COMPOUND_PREFIX,
             NULL
         }
-        public string pref;
-        public List<PrefixUsage> usages;
+        public string Pref;
+        public List<PrefixUsage> Usages;
         public Prefix(string pref, List<PrefixUsage> usages)
         {
-            this.pref = pref;
-            this.usages = usages;
+            Pref = pref;
+            Usages = usages;
         }
     }
 
     public class Word
     {
-        public string id;
+        public string Id;
         public Noun NounForm { get; private set; }
         public Adjective AdjForm { get; private set; }
         public Verb VerbForm { get; private set; }
         public Prefix PrefixForm { get; private set; }
         public Word(List<string> tokenList)
         {
-            this.id = tokenList[0].Remove(0, 6).Replace("]", "");
+            Id = tokenList[0].Remove(0, 6).Replace("]", "");
             tokenList.Remove(tokenList[0]);
-            List<string> currentBuffer = new List<string>();
-            for(int i = 0;i < tokenList.Count;i++)
+            var currentBuffer = new List<string>();
+            foreach (var t in tokenList)
             {
-                if ((tokenList[i].StartsWith("[NOUN:") || tokenList[i].StartsWith("[ADJ:") || tokenList[i].StartsWith("[VERB:") || tokenList[i].StartsWith("[PREFIX:")) && currentBuffer.Count > 0)
+                if ((t.StartsWith("[NOUN:") || t.StartsWith("[ADJ:") || t.StartsWith("[VERB:") || t.StartsWith("[PREFIX:")) && currentBuffer.Count > 0)
                 {
                     SelectParsingFunction(currentBuffer);
                     currentBuffer.Clear();
-                    currentBuffer.Add(tokenList[i]);
+                    currentBuffer.Add(t);
                 }
-                else currentBuffer.Add(tokenList[i]);
+                else currentBuffer.Add(t);
             }
             if (currentBuffer.Count == 0) return;
             SelectParsingFunction(currentBuffer);
@@ -130,60 +128,59 @@ namespace DwarfFortressXNA
 
         public void ParseNoun(List<string> tokenList)
         {
-            Noun noun;
-            string singular = "", plural = "";
-            string[] nounToken = tokenList[0].Split(new char[] { ':' });
-            singular = nounToken[1];
-            plural = nounToken[2].Replace("]", "");
+            var nounToken = tokenList[0].Split(new[] { ':' });
+            var singular = nounToken[1];
+            var plural = nounToken[2].Replace("]", "");
             tokenList.Remove(tokenList[0]);
-            List<Noun.NounUsage> nounUsages = new List<Noun.NounUsage>();
-            for(int i = 0; i < tokenList.Count;i++)
+            var nounUsages = new List<Noun.NounUsage>();
+            foreach (var t in tokenList)
             {
                 Noun.NounUsage usageBuffer;
-                if(Enum.TryParse<Noun.NounUsage>(tokenList[i].Replace("[", "").Replace("]", ""), out usageBuffer)) nounUsages.Add(usageBuffer);
+                if(Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) nounUsages.Add(usageBuffer);
             }
-            noun = new Noun(singular, plural, nounUsages);
-            this.NounForm = noun;
+            var noun = new Noun(singular, plural, nounUsages);
+            NounForm = noun;
         }
         public void ParseAdjective(List<string> tokenList)
         {
-            Adjective adj;
-            string adj_string = tokenList[0].Split(new char[] { ':' })[1].Replace("]","");
+            var adjString = tokenList[0].Split(new[] { ':' })[1].Replace("]","");
             tokenList.Remove(tokenList[0]);
-            List<Adjective.AdjectiveUsage> adjectiveUsages = new List<Adjective.AdjectiveUsage>();
-            for(int i = 0; i < tokenList.Count;i++)
+            var adjectiveUsages = new List<Adjective.AdjectiveUsage>();
+            foreach (var t in tokenList)
             {
                 Adjective.AdjectiveUsage usageBuffer;
-                if (Enum.TryParse<Adjective.AdjectiveUsage>(tokenList[i].Replace("[", "").Replace("]", ""), out usageBuffer)) adjectiveUsages.Add(usageBuffer);
+                if (Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) adjectiveUsages.Add(usageBuffer);
             }
-            adj = new Adjective(adj_string, adjectiveUsages);
-            this.AdjForm = adj;
+            var adj = new Adjective(adjString, adjectiveUsages);
+            AdjForm = adj;
         }
 
         public void ParseVerb(List<string> tokenList)
         {
-            Verb verb;
-            string[] verbStripped = tokenList[0].Split(new char[] { ':' });
-            string present_first = verbStripped[1], present_third = verbStripped[2], preterite = verbStripped[3], past_part = verbStripped[4], present_part = verbStripped[5].Replace("]","");
+            var verbStripped = tokenList[0].Split(new[] { ':' });
+            string presentFirst = verbStripped[1],
+                presentThird = verbStripped[2],
+                preterite = verbStripped[3],
+                pastPart = verbStripped[4],
+                presentPart = RawFile.StripTokenEnding(verbStripped[5]);
             tokenList.Remove(tokenList[0]);
-            bool standard = (tokenList.Count != 0);
-            verb = new Verb(present_first, present_third, preterite, past_part, present_part, standard);
-            this.VerbForm = verb;
+            var standard = (tokenList.Count != 0);
+            var verb = new Verb(presentFirst, presentThird, preterite, pastPart, presentPart, standard);
+            VerbForm = verb;
         }
 
         public void ParsePrefix(List<string> tokenList)
         {
-            Prefix prefix;
-            string pref_string = tokenList[0].Split(new char[] { ':' })[1].Replace("]", "");
+            var prefString = tokenList[0].Split(new[] { ':' })[1].Replace("]", "");
             tokenList.Remove(tokenList[0]);
-            List<Prefix.PrefixUsage> prefixUsages = new List<Prefix.PrefixUsage>();
-            for(int i =0;i<tokenList.Count;i++)
+            var prefixUsages = new List<Prefix.PrefixUsage>();
+            foreach (var t in tokenList)
             {
                 Prefix.PrefixUsage usageBuffer;
-                if (Enum.TryParse<Prefix.PrefixUsage>(tokenList[i].Replace("[", "").Replace("]", ""), out usageBuffer)) prefixUsages.Add(usageBuffer);
+                if (Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) prefixUsages.Add(usageBuffer);
             }
-            prefix = new Prefix(pref_string, prefixUsages);
-            this.PrefixForm = prefix;
+            var prefix = new Prefix(prefString, prefixUsages);
+            PrefixForm = prefix;
         }
     }
 }
