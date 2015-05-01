@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DwarfFortressXNA.Managers;
+using DwarfFortressXNA.Objects;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -19,7 +21,7 @@ namespace DwarfFortressXNA
     /// This is the main type for your game
     /// </summary>
     /// 
-    public class DwarfFortressMono : Game
+    public class DwarfFortress : Game
     {
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -37,6 +39,8 @@ namespace DwarfFortressXNA
         public static MaterialManager MaterialManager;
         public static SoundManager SoundManager;
         public static ConfigManager ConfigManager;
+        public static TissueManager TissueManager;
+        public static BodyManager BodyManager;
 
 
         public GameState GameState = GameState.MENU;
@@ -58,15 +62,17 @@ namespace DwarfFortressXNA
         int frames;
         float elapsed;
         int fps;
-        public DwarfFortressMono()
+        public DwarfFortress()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             FontManager = new FontManager();
             LanguageManager = new LanguageManager();
             MaterialManager = new MaterialManager();
+            TissueManager = new TissueManager();
             SoundManager = new SoundManager();
             ConfigManager = new ConfigManager();
+            BodyManager = new BodyManager();
             ConfigManager.LoadConfigFiles();
             Cols = ConfigManager.GetConfigValueAsInt("WINDOWEDX");
             Rows = ConfigManager.GetConfigValueAsInt("WINDOWEDY");
@@ -90,6 +96,10 @@ namespace DwarfFortressXNA
             var rawFileIm = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
             var rawFileIs = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
             var rawFileIt = new RawFile("./Raw/Objects/inorganic_metal.txt");
+            var rawFileTt = new RawFile("./Raw/Objects/tissue_template_default.txt");
+            var rawFileBd = new RawFile("./Raw/Objects/body_default.txt");
+            var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");
+            var rawFileBp = new RawFile("./Raw/Objects/b_detail_plan_default.txt");
 // ReSharper restore UnusedVariable
             var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
             for (var x = 0; x < MapWidth; x++)
@@ -106,16 +116,14 @@ namespace DwarfFortressXNA
         {
             Cols = (int)Math.Floor((double)Window.ClientBounds.Width / 8);
             Rows = (int)Math.Floor((double)Window.ClientBounds.Height / 12);
-            if(ConfigManager.GetConfigValueAsBool("BLACK_SPACE"))
-            {
-                graphics.PreferredBackBufferHeight = Rows * 12;
-                graphics.PreferredBackBufferWidth = Cols * 8;
-                graphics.ApplyChanges();
-                if (CursorX > Cols - 2) CursorX = Cols - 2;
-                if (CursorX < 1) CursorX = 1;
-                if (CursorY > Rows - 2) CursorY = Rows - 2;
-                if (CursorY < 1) CursorY = 1;
-            }  
+            if (!ConfigManager.GetConfigValueAsBool("BLACK_SPACE")) return;
+            graphics.PreferredBackBufferHeight = Rows * 12;
+            graphics.PreferredBackBufferWidth = Cols * 8;
+            graphics.ApplyChanges();
+            if (CursorX > Cols - 2) CursorX = Cols - 2;
+            if (CursorX < 1) CursorX = 1;
+            if (CursorY > Rows - 2) CursorY = Rows - 2;
+            if (CursorY < 1) CursorY = 1;
         }
 
         /// <summary>
@@ -270,8 +278,9 @@ namespace DwarfFortressXNA
                 {
                     for (var y = 1; y < Rows - 1; y++)
                     {
-                        if (x >= MapWidth || y >= MapHeight) FontManager.DrawCharacter(Random.Next(2) == 1 ? '≈' : '~', spriteBatch, font, new Vector2(x, y), FontManager.DfColor.GetPairFromTriad(7, 0, 1));
-                        else FontManager.DrawCharacter(MaterialMap[x, y].ItemSymbol, spriteBatch, font, new Vector2(x, y), MaterialMap[x, y].GetItemDisplayColor());
+                        var charNum =FontManager.Codepage[Random.Next(0xFF)];
+                        if (x >= MapWidth || y >= MapHeight) FontManager.DrawCharacter(charNum, spriteBatch, font, new Vector2(x, y), FontManager.DfColor.GetPairFromTriad(Random.Next(8), Random.Next(8), Random.Next(2)));
+                        else FontManager.DrawCharacter(MaterialMap[x, y].Tile, spriteBatch, font, new Vector2(x, y), MaterialMap[x, y].DisplayColor);
                     }
                 }
                 if (CursorOn) FontManager.DrawCharacter('X', spriteBatch, font, new Vector2(CursorX, CursorY), FontManager.DfColor.GetPairFromTriad(6, 0, 1));

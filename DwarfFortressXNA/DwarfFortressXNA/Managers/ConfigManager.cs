@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using DwarfFortressXNA.Objects;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Managers
 {
     public class ConfigManager
     {
@@ -24,7 +25,7 @@ namespace DwarfFortressXNA
                 if (line.Length > 0 && line[0] == '[')
                 {
                     var key = line.Split(new[] { ':' })[0].Replace("[", "");
-                    var value = line.Split(new[] { ':' })[1].Replace("]", "");
+                    var value = RawFile.StripTokenEnding(line.Split(new[] { ':' })[1]);
                     ConfigValues.Add(key, value);
                 }
             }

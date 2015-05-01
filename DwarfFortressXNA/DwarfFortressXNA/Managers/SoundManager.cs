@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Media;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Managers
 {
     public class SoundManager
     {

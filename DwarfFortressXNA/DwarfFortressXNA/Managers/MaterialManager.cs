@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using DwarfFortressXNA.Objects;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Managers
 {
     public class MaterialManager
     {
@@ -48,7 +48,6 @@ namespace DwarfFortressXNA
                 else currentBuffer.Add(t);
             }
             AddToList(currentBuffer);
-            Console.WriteLine("Done!");
         }
     }
 }

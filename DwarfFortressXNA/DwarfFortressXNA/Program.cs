@@ -17,7 +17,7 @@ namespace DwarfFortressXNA
         [STAThread]
         static void Main()
         {
-            using (var game = new DwarfFortressMono())
+            using (var game = new DwarfFortress())
                 game.Run();
         }
     }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using DwarfFortressXNA.Objects;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Managers
 {
     public class LanguageManager
     {
@@ -51,7 +52,7 @@ namespace DwarfFortressXNA
 
         private void ParseAsTranslation(IList<string> translation)
         {
-            var id = translation[0].Remove(0, 13).Replace("]", "");
+            var id = RawFile.StripTokenEnding(translation[0].Remove(0, 13));
             var translationDic = new Dictionary<string,string>();
             translation.Remove(translation[0]);
             foreach (var t in translation)
@@ -59,7 +60,7 @@ namespace DwarfFortressXNA
                 if (!t.StartsWith("[T_WORD:")) continue;
                 var split = t.Split(new[] { ':' });
                 var real = split[1];
-                var trans = split[2].Replace("]", "");
+                var trans = RawFile.StripTokenEnding(split[2]);
                 translationDic.Add(real, trans);
             }
             TranslationList.Add(id, translationDic);
@@ -72,7 +73,7 @@ namespace DwarfFortressXNA
             {
                 if (t.StartsWith("[SYMBOL:") && currentBuffer.Count > 0)
                 {
-                    var id = currentBuffer[0].Remove(0, 8).Replace("]", "");
+                    var id = RawFile.StripTokenEnding(currentBuffer[0].Remove(0, 8));
                     currentBuffer.Remove(currentBuffer[0]);
                     for(var j = 0; j < currentBuffer.Count;j++)
                     {
@@ -81,7 +82,7 @@ namespace DwarfFortressXNA
                             currentBuffer.Remove(currentBuffer[j]);
                             j = j - 1;
                         }
-                        else currentBuffer[j] = currentBuffer[j].Remove(0, 8).Replace("]", "");
+                        else currentBuffer[j] = RawFile.StripTokenEnding(currentBuffer[j].Remove(0, 8));
                     }
                     SymbolList.Add(id, currentBuffer);
                     currentBuffer.Clear();
@@ -89,7 +90,6 @@ namespace DwarfFortressXNA
                 }
                 else currentBuffer.Add(t);
             }
-            Console.WriteLine("done!");
         }
         public string GetTranslation(string toTranslate, string language)
         {

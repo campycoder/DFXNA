@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DwarfFortressXNA.Managers;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Objects
 {
     public enum State
     {
@@ -98,9 +99,16 @@ namespace DwarfFortressXNA
         public ColorPair DisplayColor;
         public char Tile = '█';
         public char ItemSymbol = '•';
-
         public Dictionary<string, int> IntProperties;
 
+        public Material(string template)
+        {
+            StateList = new Dictionary<State, StateDescription>();
+            IntProperties = new Dictionary<string, int>();
+            CanBeMade = new List<ItemType>();
+            InitDefaults();
+            CopyFromTemplate(template);
+        }
         public Material(List<string> tokenList)
         {
             StateList = new Dictionary<State, StateDescription>();
@@ -120,8 +128,6 @@ namespace DwarfFortressXNA
                     }
                     tokenList.Remove(tokenList[i]);
                     tokenList.InsertRange(i, multiple);
-                    Console.WriteLine("END");
-                    
                 }
                 if(tokenList[i].StartsWith("[USE_MATERIAL_TEMPLATE"))
                 {
@@ -156,9 +162,9 @@ namespace DwarfFortressXNA
                     var colorSplit = tokenList[i].Split(new[] {':'});
                     var fg = Convert.ToInt32(colorSplit[1]);
                     var bg = Convert.ToInt32(colorSplit[2]);
-                    var bt = Convert.ToInt32(colorSplit[3].Replace("]", ""));
+                    var bt = Convert.ToInt32(RawFile.StripTokenEnding(colorSplit[3]));
                     if((fg < 0 || fg > 7) || (bg < 0 || bg > 7) || (bt < 0 || bt > 1)) throw new Exception("Bad color specification with " + tokenList[i] + "!");
-                    DisplayColor = DwarfFortressMono.FontManager.DfColor.GetPairFromTriad(fg, bg, bt);
+                    DisplayColor = DwarfFortress.FontManager.DfColor.GetPairFromTriad(fg, bg, bt);
                 }
                 else if(tokenList[i].StartsWith("[TILE"))
                 {
@@ -168,7 +174,7 @@ namespace DwarfFortressXNA
                         strippedChar = strippedChar.Replace("'","");
                         Tile = strippedChar[0];
                     }
-                    else Tile = DwarfFortressMono.FontManager.Codepage[GetIntFromToken(strippedChar)];
+                    else Tile = DwarfFortress.FontManager.Codepage[GetIntFromToken(strippedChar)];
                 }
                 else if(tokenList[i].StartsWith("[IS_GEM"))
                 {
@@ -190,7 +196,7 @@ namespace DwarfFortressXNA
                         strippedChar = strippedChar.Replace("'", "");
                         ItemSymbol = strippedChar[0];
                     }
-                    else ItemSymbol = DwarfFortressMono.FontManager.Codepage[GetIntFromToken(strippedChar)];
+                    else ItemSymbol = DwarfFortress.FontManager.Codepage[GetIntFromToken(strippedChar)];
                 }
                 else if(tokenList[i].StartsWith("[IS_"))
                 {
@@ -259,8 +265,8 @@ namespace DwarfFortressXNA
 
         public void CopyFromTemplate(string template)
         {
-            if(!DwarfFortressMono.MaterialManager.MaterialTemplateList.ContainsKey(template)) throw new Exception("Bad material template requested: " + template);
-            var tempMaterial = DwarfFortressMono.MaterialManager.MaterialTemplateList[template];
+            if(!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(template)) throw new Exception("Bad material template requested: " + template);
+            var tempMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[template];
             foreach(var pair in tempMaterial.StateList)
             {
                 if (!StateList.ContainsKey(pair.Key)) StateList.Add(pair.Key, new StateDescription(pair.Value));

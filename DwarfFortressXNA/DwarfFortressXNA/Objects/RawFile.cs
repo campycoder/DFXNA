@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Objects
 {
     public enum RawType
     {
@@ -62,12 +62,19 @@ namespace DwarfFortressXNA
             switch(Type)
             {
                 case RawType.LANGUAGE:
-                    DwarfFortressMono.LanguageManager.ParseFromTokens(TokensRaw);
+                    DwarfFortress.LanguageManager.ParseFromTokens(TokensRaw);
                     break;
                 case RawType.MATERIAL_TEMPLATE:
                 case RawType.INORGANIC:
                 case RawType.PLANT:
-                    DwarfFortressMono.MaterialManager.ParseFromTokens(TokensRaw);
+                    DwarfFortress.MaterialManager.ParseFromTokens(TokensRaw);
+                    break;
+                case RawType.TISSUE_TEMPLATE:
+                    DwarfFortress.TissueManager.ParseFromTokens(TokensRaw);
+                    break;
+                case RawType.BODY:
+                case RawType.BODY_DETAIL_PLAN:
+                    DwarfFortress.BodyManager.ParseFromTokens(TokensRaw);
                     break;
             }
         }

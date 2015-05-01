@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DwarfFortressXNA
+namespace DwarfFortressXNA.Objects
 {
     public class Noun
     {
@@ -89,7 +89,7 @@ namespace DwarfFortressXNA
         public Prefix PrefixForm { get; private set; }
         public Word(List<string> tokenList)
         {
-            Id = tokenList[0].Remove(0, 6).Replace("]", "");
+            Id = RawFile.StripTokenEnding(tokenList[0].Remove(0, 6));
             tokenList.Remove(tokenList[0]);
             var currentBuffer = new List<string>();
             foreach (var t in tokenList)
@@ -130,13 +130,13 @@ namespace DwarfFortressXNA
         {
             var nounToken = tokenList[0].Split(new[] { ':' });
             var singular = nounToken[1];
-            var plural = nounToken[2].Replace("]", "");
+            var plural = RawFile.StripTokenEnding(nounToken[2]);
             tokenList.Remove(tokenList[0]);
             var nounUsages = new List<Noun.NounUsage>();
             foreach (var t in tokenList)
             {
                 Noun.NounUsage usageBuffer;
-                if(Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) nounUsages.Add(usageBuffer);
+                if(Enum.TryParse(RawFile.StripTokenEnding(t.Replace("[", "")), out usageBuffer)) nounUsages.Add(usageBuffer);
             }
             var noun = new Noun(singular, plural, nounUsages);
             NounForm = noun;
@@ -149,7 +149,7 @@ namespace DwarfFortressXNA
             foreach (var t in tokenList)
             {
                 Adjective.AdjectiveUsage usageBuffer;
-                if (Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) adjectiveUsages.Add(usageBuffer);
+                if (Enum.TryParse(RawFile.StripTokenEnding(t.Replace("[", "")), out usageBuffer)) adjectiveUsages.Add(usageBuffer);
             }
             var adj = new Adjective(adjString, adjectiveUsages);
             AdjForm = adj;
@@ -171,13 +171,13 @@ namespace DwarfFortressXNA
 
         public void ParsePrefix(List<string> tokenList)
         {
-            var prefString = tokenList[0].Split(new[] { ':' })[1].Replace("]", "");
+            var prefString = RawFile.StripTokenEnding(tokenList[0].Split(new[] {':'})[1]);
             tokenList.Remove(tokenList[0]);
             var prefixUsages = new List<Prefix.PrefixUsage>();
             foreach (var t in tokenList)
             {
                 Prefix.PrefixUsage usageBuffer;
-                if (Enum.TryParse(t.Replace("[", "").Replace("]", ""), out usageBuffer)) prefixUsages.Add(usageBuffer);
+                if (Enum.TryParse(RawFile.StripTokenEnding(t.Replace("[", "")), out usageBuffer)) prefixUsages.Add(usageBuffer);
             }
             var prefix = new Prefix(prefString, prefixUsages);
             PrefixForm = prefix;
