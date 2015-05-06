@@ -6,6 +6,13 @@ using System.Text;
 
 namespace DwarfFortressXNA.Objects
 {
+    public class TokenParseException : Exception
+    {
+        public TokenParseException(string parserName, string message) :base("Token Parser " + parserName + " threw this exception: " + message)
+        {
+            
+        }
+    }
     public enum RawType
     {
         BODY,
@@ -77,6 +84,12 @@ namespace DwarfFortressXNA.Objects
                     DwarfFortress.BodyManager.ParseFromTokens(TokensRaw);
                     break;
             }
+        }
+
+        public static int GetIntFromToken(string number)
+        {
+            if (number == "NONE") return 0;
+            return Convert.ToInt32(number);
         }
 
         public static string StripTokenEnding(string token)

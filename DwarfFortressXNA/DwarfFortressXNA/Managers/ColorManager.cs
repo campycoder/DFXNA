@@ -37,24 +37,40 @@ namespace DwarfFortressXNA.Managers
 
         public ColorManager()
         {
+            Black =new Color(0, 0, 0);
+            Blue = new Color(0, 0, 128);
+            Green = new Color(0, 128, 0);
+            Cyan = new Color(0, 128, 128);
+            Red = new Color(128, 0, 0);
+            Magenta = new Color(128, 0, 128);
+            Brown = new Color(128, 128, 0);
+            LightGrey = new Color(192, 192, 192);
+            DarkGrey = new Color(128, 128, 128);
+            LightBlue = new Color(0, 0, 255);
+            LightGreen = new Color(0, 255, 0);
+            LightCyan = new Color(0, 255, 255);
+            LightRed = new Color(255, 0, 0);
+            LightMagenta = new Color(255, 0, 255);
+            Yellow = new Color(255, 255, 0);
+            White = new Color(255, 255, 255);
             ColorList = new List<Color>
             {
-                new Color(0, 0, 0),
-                new Color(0, 0, 128),
-                new Color(0, 128, 0),
-                new Color(0, 128, 128),
-                new Color(128, 0, 0),
-                new Color(128, 0, 128),
-                new Color(128, 128, 0),
-                new Color(192, 192, 192),
-                new Color(128, 128, 128),
-                new Color(0, 0, 255),
-                new Color(0, 255, 0),
-                new Color(0, 255, 255),
-                new Color(255, 0, 0),
-                new Color(255, 0, 255),
-                new Color(255, 255, 0),
-                new Color(255, 255, 255)
+               Black,
+               Blue,
+               Green,
+               Cyan,
+               Red,
+               Magenta,
+               Brown,
+               LightGrey,
+               DarkGrey,
+               LightBlue,
+               LightGreen,
+               LightCyan,
+               LightRed,
+               LightMagenta,
+               Yellow,
+               White
             };
         }
 

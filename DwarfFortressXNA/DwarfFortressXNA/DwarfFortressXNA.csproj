@@ -74,6 +74,8 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Managers\AnnouncementManager.cs" />
+    <Compile Include="Objects\Biome.cs" />
     <Compile Include="Objects\BodyGloss.cs" />
     <Compile Include="Objects\BodyPart.cs" />
     <Compile Include="Objects\BodyTemplate.cs" />
@@ -81,6 +83,9 @@
     <Compile Include="Managers\BodyManager.cs" />
     <Compile Include="Managers\ColorManager.cs" />
     <Compile Include="Managers\ConfigManager.cs" />
+    <Compile Include="Managers\CreatureManager.cs" />
+    <Compile Include="Objects\Caste.cs" />
+    <Compile Include="Objects\Creature.cs" />
     <Compile Include="Objects\CreatureName.cs" />
     <Compile Include="DwarfFortress.cs" />
     <Compile Include="Managers\FontManager.cs" />

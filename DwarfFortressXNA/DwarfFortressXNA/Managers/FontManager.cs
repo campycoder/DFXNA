@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DwarfFortressXNA.Objects;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,7 +9,7 @@ namespace DwarfFortressXNA.Managers
 {
     public class FontManager
     {
-        public ColorManager DfColor;
+        public ColorManager ColorManager;
         public char[] Codepage =
         {' ', '☺', '☻', '♥', '♦', '♣', '♠', '•', '◘', '○', '◙', '♂', '♀', '♪', '♫', '☼',
             '►', '◄', '↕', '‼', '¶', '§', '▬', '↨', '↑', '↓', '→', '←', '∟', '↔', '▲', '▼',
@@ -26,11 +29,53 @@ namespace DwarfFortressXNA.Managers
             '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈', '°', '∙', '·', '√', 'ⁿ', '²', '■', ' '};
         public FontManager()
         {
-            DfColor = new ColorManager();
+            ColorManager = new ColorManager();
+        }
+
+        public void DrawBoxedText(string toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, Vector2 size,
+            ColorPair colorPair)
+        {
+            var buffer =new List<string>();
+            for (var i = 0; i < toDraw.Length; i++)
+            {
+                if (i%(size.X - 2) != 0 || i == 0) continue;
+                buffer.Add(toDraw.Substring(0, i));
+                toDraw = toDraw.Remove(0, i);
+
+                toDraw = buffer[buffer.Count - 1].Substring(buffer.Last().LastIndexOf(' ')) + toDraw;
+                buffer[buffer.Count - 1] = buffer[buffer.Count - 1].Remove(buffer.Last().LastIndexOf(' '));
+                if (buffer[buffer.Count - 1][0] == ' ')
+                    buffer[buffer.Count - 1] = buffer[buffer.Count - 1].Remove(0, 1);
+                i = 0;
+            }
+            buffer.Add(toDraw);
+            if (buffer[buffer.Count - 1][0] == ' ')
+                buffer[buffer.Count - 1] = buffer[buffer.Count - 1].Remove(0, 1);
+            size.Y = buffer.Count + 3;
+            for (var y = position.Y; y < position.Y + size.Y + 1; y++)
+            {
+                for (var x = position.X; x < position.X + size.X + 1; x++)
+                {
+                    if (x == position.X && y == position.Y) DrawCharacter('╔', spriteBatch, font, new Vector2(x,y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                    else if (x == position.X + size.X && y == position.Y) DrawCharacter('╗', spriteBatch, font, new Vector2(x, y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                    else if (x == position.X && y == position.Y + size.Y) DrawCharacter('╚', spriteBatch, font, new Vector2(x, y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                    else if (x == position.X + size.X && y == position.Y + size.Y) DrawCharacter('╝', spriteBatch, font, new Vector2(x, y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                    else if(x == position.X || x == position.X + size.X) DrawCharacter('║', spriteBatch, font, new Vector2(x,y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                    else if (y == position.Y || y == position.Y + size.Y) DrawCharacter('═', spriteBatch, font, new Vector2(x, y), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+                }
+            }
+            for (var i = 0; i < buffer.Count; i++)
+            {
+                DwarfFortress.FontManager.DrawString(buffer[i], spriteBatch, font, new Vector2(position.X+2,position.Y+2+i), colorPair);
+            }
+            DwarfFortress.FontManager.DrawString("Press", spriteBatch, font, new Vector2(position.X+2,position.Y+size.Y), new ColorPair(ColorManager.White, ColorManager.Black));
+            DwarfFortress.FontManager.DrawString(" Enter ", spriteBatch, font, new Vector2(position.X + 7, position.Y + size.Y), new ColorPair(ColorManager.LightGreen, ColorManager.Black));
+            DwarfFortress.FontManager.DrawString("to close window", spriteBatch, font, new Vector2(position.X + 14, position.Y + size.Y), new ColorPair(ColorManager.White, ColorManager.Black));
         }
 
         public void DrawString(string toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
+            if (toDraw == null) return;
             for (var i = 0; i < toDraw.Length;i++ )
             {
                 DrawCharacter(toDraw[i], spriteBatch, font, new Vector2(position.X + i, position.Y), colorPair);
@@ -43,6 +88,15 @@ namespace DwarfFortressXNA.Managers
             var characterSpot = GetPositionFromCharacter(toDraw);
             spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)backSpot.X * 8, (int)backSpot.Y * 12, 8, 12), colorPair.Background);
             spriteBatch.Draw(font, new Rectangle((int)position.X*8, (int)position.Y*12, 8, 12), new Rectangle((int)characterSpot.X * 8, (int)characterSpot.Y * 12, 8, 12), colorPair.Foreground);
+        }
+
+        public char GetCharFromToken(string token)
+        {
+            var split = token.Split(new[] {':'});
+            var strippedChar = RawFile.StripTokenEnding(split[1]);
+            if (!strippedChar.StartsWith("'")) return Codepage[RawFile.GetIntFromToken(strippedChar)];
+            strippedChar = strippedChar.Replace("'", "");
+            return strippedChar[0];
         }
 
         public Vector2 GetPositionFromCharacter(char character)

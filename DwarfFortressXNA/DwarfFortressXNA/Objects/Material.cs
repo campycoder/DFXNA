@@ -136,7 +136,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_COLOR"))
                 {
                     State state;
-                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new Exception("Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
+                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
                     var color = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].ColorDescriptor = color;
@@ -144,7 +144,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_NAME"))
                 {
                     State state;
-                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new Exception("Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
+                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
                     var name = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].Name = name;
@@ -152,7 +152,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_ADJ"))
                 {
                     State state;
-                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new Exception("Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
+                    if (!Enum.TryParse(tokenList[i].Split(new[] { ':' })[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] { ':' })[1] + "!");
                     var adj = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].Adj = adj;
@@ -163,18 +163,12 @@ namespace DwarfFortressXNA.Objects
                     var fg = Convert.ToInt32(colorSplit[1]);
                     var bg = Convert.ToInt32(colorSplit[2]);
                     var bt = Convert.ToInt32(RawFile.StripTokenEnding(colorSplit[3]));
-                    if((fg < 0 || fg > 7) || (bg < 0 || bg > 7) || (bt < 0 || bt > 1)) throw new Exception("Bad color specification with " + tokenList[i] + "!");
-                    DisplayColor = DwarfFortress.FontManager.DfColor.GetPairFromTriad(fg, bg, bt);
+                    if ((fg < 0 || fg > 7) || (bg < 0 || bg > 7) || (bt < 0 || bt > 1)) throw new TokenParseException("Material", "Bad color specification with " + tokenList[i] + "!");
+                    DisplayColor = DwarfFortress.FontManager.ColorManager.GetPairFromTriad(fg, bg, bt);
                 }
                 else if(tokenList[i].StartsWith("[TILE"))
                 {
-                    var strippedChar = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[1]);
-                    if(strippedChar.StartsWith("'"))
-                    {
-                        strippedChar = strippedChar.Replace("'","");
-                        Tile = strippedChar[0];
-                    }
-                    else Tile = DwarfFortress.FontManager.Codepage[GetIntFromToken(strippedChar)];
+                    Tile = DwarfFortress.FontManager.GetCharFromToken(tokenList[i]);
                 }
                 else if(tokenList[i].StartsWith("[IS_GEM"))
                 {
@@ -190,29 +184,24 @@ namespace DwarfFortressXNA.Objects
                 }
                 else if(tokenList[i].StartsWith("[ITEM_SYMBOL"))
                 {
-                    var strippedChar = RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]);
-                    if (strippedChar.StartsWith("'"))
-                    {
-                        strippedChar = strippedChar.Replace("'", "");
-                        ItemSymbol = strippedChar[0];
-                    }
-                    else ItemSymbol = DwarfFortress.FontManager.Codepage[GetIntFromToken(strippedChar)];
+                    ItemSymbol = DwarfFortress.FontManager.GetCharFromToken(tokenList[i]);
                 }
                 else if(tokenList[i].StartsWith("[IS_"))
                 {
                     var type = RawFile.StripTokenEnding(tokenList[i].Replace("[IS_", ""));
-                    if (!Enum.TryParse(type, out Type)) throw new Exception("Bad MaterialType " + type + "!");
+                    if (!Enum.TryParse(type, out Type)) throw new TokenParseException("Material", "Bad MaterialType " + type + "!");
                 }
                 else if(tokenList[i].StartsWith("[ITEMS_"))
                 {
                     var item = RawFile.StripTokenEnding(tokenList[i].Replace("[ITEMS_", ""));
                     ItemType itemType;
-                    if (!Enum.TryParse(item, out itemType)) throw new Exception("Bad ItemType " + Type + "!");
+                    if (!Enum.TryParse(item, out itemType)) throw new TokenParseException("Material", "Bad ItemType " + Type + "!");
                     CanBeMade.Add(itemType);
                 }
                 else if(IntProperties.ContainsKey(tokenList[i].Split(new[] {':'})[0].Replace("[","")))
                 {
-                    IntProperties[tokenList[i].Split(new[] { ':' })[0].Replace("[", "")] = GetIntFromToken(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
+                    var finalInt = RawFile.GetIntFromToken(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
+                    if (finalInt != 0) IntProperties[tokenList[i].Split(new[] {':'})[0].Replace("[", "")] = finalInt;
                 }
             }
         }
@@ -221,24 +210,24 @@ namespace DwarfFortressXNA.Objects
         {
             IntProperties.Add("MATERIAL_VALUE", 1);
             IntProperties.Add("SPEC_HEAT", 0);
-            IntProperties.Add("IGNITE_POINT", 0);
-            IntProperties.Add("MELTING_POINT", 0);
-            IntProperties.Add("BOILING_POINT", 0);
-            IntProperties.Add("HEATDAM_POINT", 0);
-            IntProperties.Add("COLDDAM_POINT", 0);
-            IntProperties.Add("MAT_FIXED_TEMP", 0);
+            IntProperties.Add("IGNITE_POINT", 60001);
+            IntProperties.Add("MELTING_POINT", 60001);
+            IntProperties.Add("BOILING_POINT", 60001);
+            IntProperties.Add("HEATDAM_POINT", 60001);
+            IntProperties.Add("COLDDAM_POINT", 60001);
+            IntProperties.Add("MAT_FIXED_TEMP", 60001);
             IntProperties.Add("SOLID_DENSITY", 0);
-            IntProperties.Add("LIQUIDD_ENSITY", 0);
+            IntProperties.Add("LIQUID_DENSITY", 0);
             IntProperties.Add("MOLAR_MASS", 0);
             IntProperties.Add("IMPACT_YIELD", 10000);
-            IntProperties.Add("IMPACTF_RACTURE", 10000);
+            IntProperties.Add("IMPACT_FRACTURE", 10000);
             IntProperties.Add("IMPACT_STRAIN_AT_YIELD", 0);
             IntProperties.Add("COMPRESSIVE_YIELD", 10000);
-            IntProperties.Add("COMPRESSIVEF_RACTURE", 10000);
+            IntProperties.Add("COMPRESSIVE_FRACTURE", 10000);
             IntProperties.Add("COMPRESSIVE_STRAIN_AT_YIELD", 0);
             IntProperties.Add("TENSILE_YIELD", 10000);
             IntProperties.Add("TENSILE_FRACTUE", 10000);
-            IntProperties.Add("TENSILE_STRAIN_ATY_IELD", 0);
+            IntProperties.Add("TENSILE_STRAIN_AT_YIELD", 0);
             IntProperties.Add("TORSION_YIELD", 10000);
             IntProperties.Add("TORSION_FRACTURE", 10000);
             IntProperties.Add("TORSION_STRAIN_AT_YIELD", 0);
@@ -252,10 +241,19 @@ namespace DwarfFortressXNA.Objects
             IntProperties.Add("ABSORPTION", 0);
         }
 
-        public int GetIntFromToken(string number)
+        public string GetNameFromState(State state, bool plural)
         {
-            if (number == "NONE") return 0;
-            return Convert.ToInt32(number);
+            if (StateList.ContainsKey(State.ALL) && ((!plural && StateList[State.ALL].Name != null) || (plural && StateList[State.ALL].Plural != null)))
+            {
+                return !plural ? StateList[State.ALL].Name : StateList[State.ALL].Plural;
+            }
+            if (StateList.ContainsKey(State.ALL_SOLID) &&
+                (state == State.SOLID || state == State.SOLID_PASTE || state == State.SOLID_POWDER ||
+                 state == State.SOLID_PRESSED) && ((!plural && StateList[State.ALL_SOLID].Name != null) || (plural && StateList[State.ALL_SOLID].Plural != null)))
+            {
+                return !plural ? StateList[State.ALL_SOLID].Name : StateList[State.ALL_SOLID].Plural;
+            }
+            return !plural ? StateList[state].Name : StateList[state].Plural;
         }
 
         public ColorPair GetItemDisplayColor()
@@ -265,7 +263,7 @@ namespace DwarfFortressXNA.Objects
 
         public void CopyFromTemplate(string template)
         {
-            if(!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(template)) throw new Exception("Bad material template requested: " + template);
+            if (!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(template)) throw new TokenParseException("Material", "Bad material template requested: " + template);
             var tempMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[template];
             foreach(var pair in tempMaterial.StateList)
             {
