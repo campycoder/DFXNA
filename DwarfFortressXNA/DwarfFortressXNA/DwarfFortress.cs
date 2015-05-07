@@ -233,7 +233,7 @@ namespace DwarfFortressXNA
                         CursorY++;
                         arrowDeb = true;
                         CursorMoveTimer = MoveConst;
-                        AnnouncementManager.AnnouncementEvent(AnnouncementType.STRUCK_ECONOMIC_MINERAL, new List<string> {MaterialMap[Random.Next(MapWidth), Random.Next(MapHeight)].GetNameBasedOnState(false, false)});
+                        AnnouncementManager.AnnouncementEvent(AnnouncementType.ENDGAME_EVENT_1, new List<string>());
                     }
                     if (Keyboard.GetState().IsKeyDown(Keys.Up) && CursorY > 1 && !arrowDeb)
                     {

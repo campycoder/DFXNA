@@ -1,39 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DwarfFortressXNA.Managers
 {
     public class Announcement
     {
-        public AnnouncementType Type;
-        public string Text;
-        public Color Color;
-        public bool Box;
-        public bool Recenter;
-        public bool Pause;
-        public bool Fortress;
-        public bool Adventure;
-        public bool Report;
-        public bool ReportActive;
-
-        public Announcement(AnnouncementType type, string text, Color color, bool box, bool recenter, bool pause,
-            bool fortress, bool adventure, bool report, bool reportActive)
-        {
-            Type = type;
-            Text = text;
-            Color = color;
-            Box = box;
-            Recenter = recenter;
-            Pause = pause;
-            Fortress = fortress;
-            Adventure = adventure;
-            Report = report;
-            ReportActive = reportActive;
-        }
+// ReSharper disable InconsistentNaming
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AnnouncementType announcementType;
+        public string text;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ColorRaw color;
+        public bool box;
+        public bool recenter;
+        public bool pause;
+        public bool fortress;
+        public bool adventure;
+        public bool report;
+        public bool reportActive;
+// ReSharper restore InconsistentNaming
     }
     public enum AnnouncementType
     {
@@ -366,7 +357,7 @@ namespace DwarfFortressXNA.Managers
             if (AnnouncementTimer != 0) return;
             NumberBuffered--;
             if (NumberBuffered != 0 &&
-                AnnouncementTextList[AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key].Box)
+                AnnouncementTextList[AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key].box)
             {
                 DwarfFortress.BoxLocked = true;
             }
@@ -382,96 +373,28 @@ namespace DwarfFortressXNA.Managers
             var i = 0;
             foreach (KeyValuePair<AnnouncementType, List<string>> pair in AnnouncementBuffer)
             {
-                DwarfFortress.FontManager.DrawString(ConstructAnnouncement(pair.Key,pair.Value), spriteBatch, font, new Vector2(1, i+1), new ColorPair(AnnouncementTextList[pair.Key].Color, ColorManager.Black));
+                DwarfFortress.FontManager.DrawString(ConstructAnnouncement(pair.Key,pair.Value), spriteBatch, font, new Vector2(1, i+1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[pair.Key].color], ColorManager.Black));
                 i++;
             }
         }
 
         public AnnouncementManager()
         {
-            AnnouncementTextList = new Dictionary<AnnouncementType, Announcement>
+            AnnouncementTextList = new Dictionary<AnnouncementType, Announcement>();
+            var serializer = new JsonSerializer();
+            var announcementList = serializer.Deserialize<List<Announcement>>(
+                new JsonTextReader(new StreamReader("./Data/Properties/AnnouncementList.json")));
+            foreach (var ann in announcementList)
             {
-                {
-                    AnnouncementType.REACHED_PEAK,
-                    new Announcement(AnnouncementType.REACHED_PEAK, "I have no clue!", ColorManager.LightRed, true,
-                        false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.ERA_CHANGE,
-                    new Announcement(AnnouncementType.ERA_CHANGE, "The world has passed into {0}", ColorManager.White, true, false, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.ENDGAME_EVENT_1, 
-                    new Announcement(AnnouncementType.ENDGAME_EVENT_1, "You have discovered an eerie cavern. The air above the dark stone floor is alive with vorticies of purple light and dark, boiling clouds. Seemingly bottomless glowing pits mark the surface", ColorManager.White, true, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.ENDGAME_EVENT_2,
-                    new Announcement(AnnouncementType.ENDGAME_EVENT_2, "Horrors! Demons in the deep!", ColorManager.Red, true, true , true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.FEATURE_DISCOVERY,
-                    new Announcement(AnnouncementType.FEATURE_DISCOVERY, "You have discovered a {0}",ColorManager.White, true, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRUCK_DEEP_METAL, 
-                    new Announcement(AnnouncementType.STRUCK_DEEP_METAL, "{0}! Praise the miners!", ColorManager.LightCyan, true, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRUCK_MINERAL,
-                    new Announcement(AnnouncementType.STRUCK_MINERAL, "You have struck {0}!", ColorManager.Yellow, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRUCK_ECONOMIC_MINERAL,
-                    new Announcement(AnnouncementType.STRUCK_ECONOMIC_MINERAL, "You have struck {0}!", ColorManager.Yellow, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.MIGRANT_ARRIVAL,
-                    new Announcement(AnnouncementType.MIGRANT_ARRIVAL, "Some migrants have arrived.", ColorManager.DarkGrey, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.WEATHER_BECOMES_CLEAR,
-                    new Announcement(AnnouncementType.WEATHER_BECOMES_CLEAR, "The weather has cleared.", ColorManager.DarkGrey, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.WEATHER_BECOMES_RAIN,
-                    new Announcement(AnnouncementType.WEATHER_BECOMES_RAIN, "It is raining.", ColorManager.Blue, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.WEATHER_BECOMES_SNOW,
-                    new Announcement(AnnouncementType.WEATHER_BECOMES_SNOW, "A snow storm has come.", ColorManager.White, false, false, false, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRANGE_CLOUD,
-                    new Announcement(AnnouncementType.STRANGE_CLOUD, "A cloud of {0} has drifted nearby!", ColorManager.Red, false, false, false, true, true, false ,false)
-                },
-                {
-                    AnnouncementType.STRANGE_MOOD_FEY,
-                    new Announcement(AnnouncementType.STRANGE_MOOD_FEY, "{0} is taken by a fey mood!", ColorManager.White, false, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRANGE_MOOD_SECRET, 
-                    new Announcement(AnnouncementType.STRANGE_MOOD_SECRET, "{0} withdraws from society...", ColorManager.DarkGrey, false, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRANGE_MOOD_POSSESED,
-                    new Announcement(AnnouncementType.STRANGE_MOOD_POSSESED, "{0} has been possessed!", ColorManager.LightMagenta, false, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRANGE_MOOD_FELL, 
-                    new Announcement(AnnouncementType.STRANGE_MOOD_FELL, "{0} looses a roaring laughter, fell and terrible!", ColorManager.Magenta, false, true, true, true, true, false, false)
-                },
-                {
-                    AnnouncementType.STRANGE_MOOD_MACABRE,
-                    new Announcement(AnnouncementType.STRANGE_MOOD_MACABRE, "{0} begins to stalk and brood...", ColorManager.DarkGrey, false, true, true, true, true, false, false)
-                }
-            };
+                AnnouncementTextList.Add(ann.announcementType, ann);
+            }
             AnnouncementBuffer = new List<KeyValuePair<AnnouncementType, List<string>>>();
         }
 
         public string ConstructAnnouncement(AnnouncementType announcementType, List<string> arguments)
         {
             // ReSharper disable once CoVariantArrayConversion
-            return String.Format(AnnouncementTextList[announcementType].Text, arguments.ToArray());
+            return String.Format(AnnouncementTextList[announcementType].text, arguments.ToArray());
         }
 
         public void RenderAnnouncement(AnnouncementType announcementType, List<string> arguments,
@@ -480,33 +403,38 @@ namespace DwarfFortressXNA.Managers
             var finalText = ConstructAnnouncement(announcementType, arguments);
             if (!Char.IsPunctuation(finalText[finalText.Length - 1])) finalText += '.';
             var extraText = "";
-            if(!AnnouncementTextList[announcementType].Box)
+            if (!DwarfFortress.BoxLocked)
             {
                 if (finalText.Length/2 > (DwarfFortress.Cols - 2)/2)
                 {
-                    extraText = finalText.Substring(((DwarfFortress.Cols - 2) / 2));
-                    finalText = finalText.Remove(((DwarfFortress.Cols - 2) / 2));
-                    DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(AnnouncementTextList[announcementType].Color, ColorManager.Black));
+                    finalText = finalText.Substring((int)(Math.Abs(AnnouncementTimer - 300) * ((finalText.Length - ((DwarfFortress.Cols - 2) / 2)) / 300f)), ((DwarfFortress.Cols - 2) / 2));
+                    if(extraText == "") DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
+                    else
+                    {
+                        DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2)-7, DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
+                        DwarfFortress.FontManager.DrawString("[CONT.]", spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2) + (finalText.Length-7), DwarfFortress.Rows - 1), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
+
+                    }
                 }
-                else DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(AnnouncementTextList[announcementType].Color, ColorManager.Black));
+                else DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
             }
             if (NumberBuffered > 1) DwarfFortress.FontManager.DrawString(NumberBuffered.ToString(CultureInfo.InvariantCulture), spriteBatch, font, new Vector2((DwarfFortress.Cols/8), DwarfFortress.Rows - 1), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
-            if (AnnouncementTextList[announcementType].Box && DwarfFortress.BoxLocked)
+            if (AnnouncementTextList[announcementType].box && DwarfFortress.BoxLocked)
             {
-                DwarfFortress.FontManager.DrawBoxedText(finalText+extraText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (40 / 2) - 6, 4), new Vector2(53, 3 + (int)Math.Floor(finalText.Length/53d)), new ColorPair(AnnouncementTextList[announcementType].Color, ColorManager.Black));
+                DwarfFortress.FontManager.DrawBoxedText(finalText + extraText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (40 / 2) - 6, 4), new Vector2(53, 3 + (int)Math.Floor(finalText.Length / 53d)), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
             }
         }
 
         public void AnnouncementEvent(AnnouncementType announcementType, List<string> arguments)
         {
             // ReSharper disable once CoVariantArrayConversion
-            AnnouncementBuffer.Add(new KeyValuePair<AnnouncementType, List<string>>(announcementType, arguments));
-            if (AnnouncementTextList[announcementType].Pause) DwarfFortress.Paused = true;
-            if (AnnouncementTextList[announcementType].Box && NumberBuffered == 0)
+            if (AnnouncementTextList[announcementType].pause) DwarfFortress.Paused = true;
+            if (AnnouncementTextList[announcementType].box && NumberBuffered == 0)
             {
                 DwarfFortress.BoxLocked = true;
                 AnnouncementTimer = DwarfFortress.FrameLimit*3;
             }
+            AnnouncementBuffer.Add(new KeyValuePair<AnnouncementType, List<string>>(announcementType, arguments));
             NumberBuffered++;
         }
     }
