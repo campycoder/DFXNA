@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -366,15 +367,32 @@ namespace DwarfFortressXNA.Managers
 
         public void Render(SpriteBatch spriteBatch, Texture2D font)
         {
-            if (NumberBuffered != 0)
-            {
-                RenderAnnouncement(AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key, AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Value, spriteBatch, font);
-            }
             var i = 0;
             foreach (KeyValuePair<AnnouncementType, List<string>> pair in AnnouncementBuffer)
             {
-                DwarfFortress.FontManager.DrawString(ConstructAnnouncement(pair.Key,pair.Value), spriteBatch, font, new Vector2(1, i+1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[pair.Key].color], ColorManager.Black));
-                i++;
+                var constructedAnnouncement = ConstructAnnouncement(pair.Key, pair.Value);
+                var numberOfLines = (int) Math.Ceiling((double) constructedAnnouncement.Length/(DwarfFortress.Cols - 2));
+                var splitBuffer = new List<string>();
+                for (int j = 0; j < numberOfLines; j++)
+                {
+                    splitBuffer.Add(constructedAnnouncement.Substring(j * (DwarfFortress.Cols - 2), j == numberOfLines - 1 ? (constructedAnnouncement.Length - j * (DwarfFortress.Cols - 2)) : (DwarfFortress.Cols - 2)));
+                }
+                for (int j = 0; j < numberOfLines; j++)
+                {
+                    if (j != numberOfLines - 1)
+                    {
+                        var spaceIndex = splitBuffer[j].LastIndexOf(' ');
+                        var spaceChop = splitBuffer[j].Substring(spaceIndex);
+                        splitBuffer[j] = splitBuffer[j].Remove(spaceIndex);
+                        splitBuffer[j + 1] = spaceChop.Replace(" ", "") + splitBuffer[j + 1];
+                    }
+                    DwarfFortress.FontManager.DrawString(splitBuffer[j], spriteBatch, font, new Vector2(1, i + 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[pair.Key].color], ColorManager.Black));
+                    i++;
+                }
+            }
+            if (NumberBuffered != 0)
+            {
+                RenderAnnouncement(AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key, AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Value, spriteBatch, font);
             }
         }
 
@@ -394,7 +412,9 @@ namespace DwarfFortressXNA.Managers
         public string ConstructAnnouncement(AnnouncementType announcementType, List<string> arguments)
         {
             // ReSharper disable once CoVariantArrayConversion
-            return String.Format(AnnouncementTextList[announcementType].text, arguments.ToArray());
+            var final = String.Format(AnnouncementTextList[announcementType].text, arguments.ToArray());
+            if (!char.IsPunctuation(final.Last())) final += ".";
+            return final;
         }
 
         public void RenderAnnouncement(AnnouncementType announcementType, List<string> arguments,
@@ -418,7 +438,7 @@ namespace DwarfFortressXNA.Managers
                 }
                 else DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
             }
-            if (NumberBuffered > 1) DwarfFortress.FontManager.DrawString(NumberBuffered.ToString(CultureInfo.InvariantCulture), spriteBatch, font, new Vector2((DwarfFortress.Cols/8), DwarfFortress.Rows - 1), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
+            if (NumberBuffered > 1) DwarfFortress.FontManager.DrawString(NumberBuffered.ToString(CultureInfo.InvariantCulture), spriteBatch, font, new Vector2(1, DwarfFortress.Rows - 1), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
             if (AnnouncementTextList[announcementType].box && DwarfFortress.BoxLocked)
             {
                 DwarfFortress.FontManager.DrawBoxedText(finalText + extraText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (40 / 2) - 6, 4), new Vector2(53, 3 + (int)Math.Floor(finalText.Length / 53d)), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));

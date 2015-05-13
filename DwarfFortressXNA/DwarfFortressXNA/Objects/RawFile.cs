@@ -83,6 +83,9 @@ namespace DwarfFortressXNA.Objects
                 case RawType.BODY_DETAIL_PLAN:
                     DwarfFortress.BodyManager.ParseFromTokens(TokensRaw);
                     break;
+                case RawType.CREATURE:
+                    DwarfFortress.CreatureManager.ParseFromTokens(TokensRaw);
+                    break;
             }
         }
 

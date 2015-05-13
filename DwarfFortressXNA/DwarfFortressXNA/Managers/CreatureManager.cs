@@ -8,28 +8,32 @@ namespace DwarfFortressXNA.Managers
 {
     public class CreatureManager
     {
+        public Dictionary<string, Creature> CreatureList;
         public CreatureManager()
         {
-            
+            CreatureList = new Dictionary<string, Creature>();
         }
 
-        public void ParseFromTokens(List<string> tokenList)
+        public void AddToList(List<string> currentBuffer)
         {
-            for (int i = 0; i < tokenList.Count; i++)
+            var creature = new Creature(currentBuffer);
+            CreatureList.Add(RawFile.StripTokenEnding(currentBuffer[0].Remove(0,10)), creature);
+        }
+
+        public void ParseFromTokens(List<string> tokens)
+        {
+            var currentBuffer = new List<string>();
+            foreach (string token in tokens)
             {
-                if (RawFile.NumberOfTokens(tokenList[i]) > 1)
+                if (token.StartsWith("[CREATURE:") && currentBuffer.Count != 0)
                 {
-                    var multiple = tokenList[i].Split(new[] { ']' }).ToList();
-                    multiple.Remove("");
-                    for (var j = 0; j < multiple.Count; j++)
-                    {
-                        multiple[j] = multiple[j] + "]";
-                    }
-                    tokenList.Remove(tokenList[i]);
-                    tokenList.InsertRange(i, multiple);
-                } 
+                    AddToList(currentBuffer);
+                    currentBuffer.Clear();
+                    currentBuffer.Add(token);
+                }
+                else currentBuffer.Add(token);
             }
-            
+            AddToList(currentBuffer);
         }
 
 

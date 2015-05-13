@@ -45,7 +45,7 @@ namespace DwarfFortressXNA.Objects
 
         public void RenderTile(SpriteBatch spriteBatch, Texture2D font, Vector2 whereToRender)
         {
-            if (!Revealed) return;
+            //if (!Revealed) return;
             DwarfFortress.FontManager.DrawCharacter(Material == null ? '▓' : Material.Tile, spriteBatch, font, whereToRender, Material == null ? new ColorPair(ColorManager.Cyan, ColorManager.Black) : Material.DisplayColor);
         }
     }

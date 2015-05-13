@@ -15,6 +15,7 @@ namespace DwarfFortressXNA
         INTRO,
         MENU,
         WORLDGEN,
+        FONTTEST,
         PLAYING
     }
     /// <summary>
@@ -43,6 +44,7 @@ namespace DwarfFortressXNA
         public static TissueManager TissueManager;
         public static BodyManager BodyManager;
         public static AnnouncementManager AnnouncementManager;
+        public static CreatureManager CreatureManager;
 
 
         public GameState GameState = GameState.MENU;
@@ -81,6 +83,7 @@ namespace DwarfFortressXNA
             SoundManager = new SoundManager();
             ConfigManager = new ConfigManager();
             BodyManager = new BodyManager();
+            CreatureManager = new CreatureManager();
             AnnouncementManager = new AnnouncementManager();
             ConfigManager.LoadConfigFiles();
             Cols = ConfigManager.GetConfigValueAsInt("WINDOWEDX");
@@ -89,8 +92,8 @@ namespace DwarfFortressXNA
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += HandleResize;
             Random = new Random();
-            graphics.PreferredBackBufferHeight = (Rows * 12);
-            graphics.PreferredBackBufferWidth = (Cols * 8);
+            graphics.PreferredBackBufferHeight = (Rows * FontManager.CharSizeY);
+            graphics.PreferredBackBufferWidth = (Cols * FontManager.CharSizeX);
             TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 1000/FrameLimit);
             Window.Title = "Dwarf Fortress";
 // ReSharper disable UnusedVariable
@@ -109,6 +112,7 @@ namespace DwarfFortressXNA
             var rawFileBd = new RawFile("./Raw/Objects/body_default.txt");
             var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");
             var rawFileBp = new RawFile("./Raw/Objects/b_detail_plan_default.txt");
+            var rawFileSpider = new RawFile("./Raw/Objects/creature_ggcs.txt");
 // ReSharper restore UnusedVariable
             var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
             for (var x = 0; x < MapWidth; x++)
@@ -123,11 +127,11 @@ namespace DwarfFortressXNA
 
         public void HandleResize(object sender, EventArgs e)
         {
-            Cols = (int)Math.Floor((double)Window.ClientBounds.Width / 8);
-            Rows = (int)Math.Floor((double)Window.ClientBounds.Height / 12);
+            Cols = (int)Math.Floor((double)Window.ClientBounds.Width / FontManager.CharSizeX);
+            Rows = (int)Math.Floor((double)Window.ClientBounds.Height / FontManager.CharSizeY);
             if (ConfigManager.GetConfigValueAsBool("BLACK_SPACE")) return;
-            graphics.PreferredBackBufferHeight = Rows*12;
-            graphics.PreferredBackBufferWidth = Cols*8;
+            graphics.PreferredBackBufferHeight = Rows * FontManager.CharSizeY;
+            graphics.PreferredBackBufferWidth = Cols * FontManager.CharSizeX;
             graphics.ApplyChanges();
             if (CursorX > Cols - 2) CursorX = Cols - 2;
             if (CursorX < 1) CursorX = 1;
@@ -157,7 +161,11 @@ namespace DwarfFortressXNA
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             //font = this.Content.Load<Texture2D>("./Data/curses_640x300");
-            font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/curses_640x300.png", FileMode.Open));
+            font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/taffer.png", FileMode.Open));
+            FontManager.SetCharSize(font.Width/16,font.Height/16);
+            graphics.PreferredBackBufferHeight = (Rows * FontManager.CharSizeY);
+            graphics.PreferredBackBufferWidth = (Cols * FontManager.CharSizeX);
+            graphics.ApplyChanges();
             SoundManager.PlaySong("TITLE_SONG");
         }
 
@@ -188,9 +196,18 @@ namespace DwarfFortressXNA
                 refreshRate = 0;
             }
 
-            if(GameState == GameState.PLAYING)
+            if (GameState != GameState.MENU)
             {
                 if (!BoxLocked)
+                {
+                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                        Keyboard.GetState().IsKeyDown(Keys.Escape)) GameStateChange(GameState.MENU);
+                }
+            }
+
+            if(GameState == GameState.PLAYING)
+            {
+                if(!BoxLocked)
                 {
                     AnnouncementManager.Update();
                     if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Pdebounce)
@@ -203,9 +220,6 @@ namespace DwarfFortressXNA
                     {
                         Pdebounce = false;
                     }
-                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-                        Keyboard.GetState().IsKeyDown(Keys.Escape)) GameStateChange(GameState.MENU);
-
                     if (Keyboard.GetState().IsKeyDown(Keys.G) && !Pdebounce)
                     {
                         var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
@@ -262,13 +276,14 @@ namespace DwarfFortressXNA
             if(GameState == GameState.MENU)
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 0) GameStateChange(GameState.PLAYING);
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 1) Exit();
+                if(Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 1) GameStateChange(GameState.FONTTEST);
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 2) Exit();
                 if (Keyboard.GetState().IsKeyDown(Keys.Up) && !arrowDeb && selection > 0)
                 {
                     selection--;
                     arrowDeb = true;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Down) && !arrowDeb && selection < 1)
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && !arrowDeb && selection < 2)
                 {
                     selection++;
                     arrowDeb = true;
@@ -283,7 +298,7 @@ namespace DwarfFortressXNA
             if (stateToChange == GameState) return;
             SoundManager.StopCurrentSong();
             if (stateToChange == GameState.MENU) SoundManager.PlaySong("TITLE_SONG");
-            if (stateToChange == GameState.PLAYING) SoundManager.PlaySong("GAME_SONG");
+            else SoundManager.PlaySong("GAME_SONG");
             GameState = stateToChange;
             selection = 0;
         }
@@ -321,15 +336,28 @@ namespace DwarfFortressXNA
                 FontManager.DrawString("  Dwarf Fortress  ", spriteBatch, font, new Vector2(Cols/2 - 9, 0), FontManager.ColorManager.GetPairFromTriad(0, 7, 0));
                 if (Paused) FontManager.DrawString("*PAUSED*", spriteBatch, font, new Vector2(1, 0), FontManager.ColorManager.GetPairFromTriad(3, 2, 1));
                 if(ConfigManager.GetConfigValueAsBool("FPS")) FontManager.DrawString("FPS: " + fps + " (" +finalRef+")", spriteBatch, font, new Vector2(Cols -  (Cols/4), 0), FontManager.ColorManager.GetPairFromTriad(2, 2, 1));
-                AnnouncementManager.Render(spriteBatch, font);
+                AnnouncementManager.Render(spriteBatch, font); 
+            }
+            else if (GameState == GameState.FONTTEST)
+            {
+                for (int s = 0; s < 2; s++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        FontManager.FontTest(spriteBatch, font, new Vector2(0 + i*16, 0 + s*16), FontManager.ColorManager.GetPairFromTriad(i, 0, s));
+                    }
+                }
+                
+                
             }
             else if(GameState == GameState.MENU)
             {
                 FontManager.DrawString("Slaves to Armok:  God of Blood", spriteBatch, font, new Vector2(Cols/2 - 15, 2), FontManager.ColorManager.GetPairFromTriad(4, 0, 1));
                 FontManager.DrawString("Chapter II: Dwarf Fortress", spriteBatch, font, new Vector2(Cols/2 - 12, 3), FontManager.ColorManager.GetPairFromTriad(7, 0, 1));
                 FontManager.DrawString("(XNA EDITION)", spriteBatch, font, new Vector2(Cols/2 - 6, 5), FontManager.ColorManager.GetPairFromTriad(6, 6, 1));
-                FontManager.DrawString("Look at Something", spriteBatch, font, new Vector2(Cols/2 - 8, 10), FontManager.ColorManager.GetPairFromTriad(7, 0, 1 - selection));
-                FontManager.DrawString("Exit", spriteBatch, font, new Vector2(Cols/2 - 1, 12), FontManager.ColorManager.GetPairFromTriad(7, 0, selection));
+                FontManager.DrawString("Look at Something", spriteBatch, font, new Vector2(Cols/2 - 8, 10), FontManager.ColorManager.GetPairFromTriad(7, 0, selection == 0 ? 1 : 0));
+                FontManager.DrawString("Look at Something Else", spriteBatch, font, new Vector2(Cols/2 - 10, 12), FontManager.ColorManager.GetPairFromTriad(7,0,selection == 1 ? 1: 0));
+                FontManager.DrawString("Exit", spriteBatch, font, new Vector2(Cols/2 - 1, 14), FontManager.ColorManager.GetPairFromTriad(7, 0, selection == 2 ? 1 : 0));
             }
             
             spriteBatch.End();
