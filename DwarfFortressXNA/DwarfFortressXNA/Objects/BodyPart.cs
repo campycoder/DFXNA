@@ -52,7 +52,6 @@ namespace DwarfFortressXNA.Objects
         public List<string> IndividualPlurals; 
         public BodyPart(List<String> tokenList)
         {
-            BodyPartProperties propertyBuffer;
             BodyPartProprtiesList = new List<BodyPartProperties>();
             var currentName = 0;
             for (var i = 0; i < tokenList.Count; i++)
@@ -87,38 +86,42 @@ namespace DwarfFortressXNA.Objects
                 {
                     ConnectionCategory = RawFile.StripTokenEnding(tokenList[i].Remove(0, 9));
                 }
-                else if (tokenList[i].StartsWith("[CONTYPE:"))
+                else
                 {
-                    if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)), out propertyBuffer)) throw new TokenParseException("Body Part", "Invalid connection type " + RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)) + "!");
-                    if (propertyBuffer != BodyPartProperties.UPPERBODY && propertyBuffer != BodyPartProperties.LOWERBODY && propertyBuffer != BodyPartProperties.HEAD && propertyBuffer != BodyPartProperties.GRASP && propertyBuffer != BodyPartProperties.STANCE) throw new TokenParseException("Body Part", "Bad connection type " + propertyBuffer + "!");
-                    ConnectionType = propertyBuffer;
-                }
-                else if (tokenList[i].StartsWith("[DEFAULT_RELSIZE"))
-                {
-                    DefaultRelsize = Convert.ToInt32(RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[1]));
-                }
-                else if (tokenList[i].StartsWith("[NUMBER"))
-                {
-                    Number = Convert.ToInt32(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
-                }
-                else if (tokenList[i].StartsWith("[INDIVIDUAL_NAME"))
-                {
-                    if (currentName == Number) throw new TokenParseException("Body Part", "Too many names defined! Only " + Number + " body parts!");
-                    if (IndividualNames == null)
+                    BodyPartProperties propertyBuffer;
+                    if (tokenList[i].StartsWith("[CONTYPE:"))
                     {
-                        IndividualNames = new List<string>();
-                        IndividualPlurals = new List<string>();
+                        if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)), out propertyBuffer)) throw new TokenParseException("Body Part", "Invalid connection type " + RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)) + "!");
+                        if (propertyBuffer != BodyPartProperties.UPPERBODY && propertyBuffer != BodyPartProperties.LOWERBODY && propertyBuffer != BodyPartProperties.HEAD && propertyBuffer != BodyPartProperties.GRASP && propertyBuffer != BodyPartProperties.STANCE) throw new TokenParseException("Body Part", "Bad connection type " + propertyBuffer + "!");
+                        ConnectionType = propertyBuffer;
                     }
-                    var name = tokenList[i].Split(new[] {':'})[1];
-                    var plural = RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[2]);
-                    plural = plural == "NP" ? "" : plural == "STP" ? name + "s" : plural;
-                    IndividualNames.Add(name);
-                    IndividualPlurals.Add(plural);
-                    currentName++;
-                }
-                else if (Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out propertyBuffer))
-                {
-                    BodyPartProprtiesList.Add(propertyBuffer);
+                    else if (tokenList[i].StartsWith("[DEFAULT_RELSIZE"))
+                    {
+                        DefaultRelsize = Convert.ToInt32(RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[1]));
+                    }
+                    else if (tokenList[i].StartsWith("[NUMBER"))
+                    {
+                        Number = Convert.ToInt32(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
+                    }
+                    else if (tokenList[i].StartsWith("[INDIVIDUAL_NAME"))
+                    {
+                        if (currentName == Number) throw new TokenParseException("Body Part", "Too many names defined! Only " + Number + " body parts!");
+                        if (IndividualNames == null)
+                        {
+                            IndividualNames = new List<string>();
+                            IndividualPlurals = new List<string>();
+                        }
+                        var name = tokenList[i].Split(new[] {':'})[1];
+                        var plural = RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[2]);
+                        plural = plural == "NP" ? "" : plural == "STP" ? name + "s" : plural;
+                        IndividualNames.Add(name);
+                        IndividualPlurals.Add(plural);
+                        currentName++;
+                    }
+                    else if (Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out propertyBuffer))
+                    {
+                        BodyPartProprtiesList.Add(propertyBuffer);
+                    }
                 }
             }
         }

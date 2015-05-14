@@ -27,6 +27,46 @@ namespace DwarfFortressXNA.Managers
         public bool reportActive;
 // ReSharper restore InconsistentNaming
     }
+
+    public class AnnouncementInstance
+    {
+        public AnnouncementType Type;
+        public ColorRaw Color;
+        public List<string> Lines;
+        public int NumberOfLines;
+        public string Constructed;
+        public List<string> Arguments; 
+
+        public AnnouncementInstance(AnnouncementType type, ColorRaw color, List<string> args)
+        {
+            Type = type;
+            Color = color;
+            Arguments = args;
+            Constructed = DwarfFortress.AnnouncementManager.ConstructAnnouncement(type, args);
+            Lines = ReconstructLineArray();
+            NumberOfLines = Lines.Count;
+        }
+
+        public List<string> ReconstructLineArray()
+        {
+            var splitBuffer = new List<string>();
+            var constructedAnnouncement = Constructed;
+            NumberOfLines = (int)Math.Ceiling((double)constructedAnnouncement.Length / (DwarfFortress.Cols - 2));
+            for (var j = 0; j < NumberOfLines; j++)
+            {
+                splitBuffer.Add(constructedAnnouncement.Substring(j * (DwarfFortress.Cols - 2), j == NumberOfLines - 1 ? (constructedAnnouncement.Length - j * (DwarfFortress.Cols - 2)) : (DwarfFortress.Cols - 2)));
+            }
+            for (var j = 0; j < NumberOfLines - 1; j++)
+            {
+                var spaceIndex = splitBuffer[j].LastIndexOf(' ');
+                var spaceChop = splitBuffer[j].Substring(spaceIndex);
+                splitBuffer[j] = splitBuffer[j].Remove(spaceIndex);
+                splitBuffer[j + 1] = spaceChop.Replace(" ", "") + splitBuffer[j + 1];
+            }
+            return splitBuffer;
+        }
+    }
+
     public enum AnnouncementType
     {
         NULL,
@@ -345,9 +385,11 @@ namespace DwarfFortressXNA.Managers
     public class AnnouncementManager
     {
         public Dictionary<AnnouncementType, Announcement> AnnouncementTextList;
-        public List<KeyValuePair<AnnouncementType, List<string>>> AnnouncementBuffer;
+        public List<AnnouncementInstance> AnnouncementBuffer;
         public int AnnouncementTimer = DwarfFortress.FrameLimit*3;
         public int NumberBuffered = 0;
+        public int PageNumber = 0;
+        public int NumberOfPages = 1;
 
         public void Update()
         {
@@ -358,7 +400,7 @@ namespace DwarfFortressXNA.Managers
             if (AnnouncementTimer != 0) return;
             NumberBuffered--;
             if (NumberBuffered != 0 &&
-                AnnouncementTextList[AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key].box)
+                AnnouncementTextList[AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Type].box)
             {
                 DwarfFortress.BoxLocked = true;
             }
@@ -367,33 +409,40 @@ namespace DwarfFortressXNA.Managers
 
         public void Render(SpriteBatch spriteBatch, Texture2D font)
         {
-            var i = 0;
-            foreach (KeyValuePair<AnnouncementType, List<string>> pair in AnnouncementBuffer)
-            {
-                var constructedAnnouncement = ConstructAnnouncement(pair.Key, pair.Value);
-                var numberOfLines = (int) Math.Ceiling((double) constructedAnnouncement.Length/(DwarfFortress.Cols - 2));
-                var splitBuffer = new List<string>();
-                for (int j = 0; j < numberOfLines; j++)
-                {
-                    splitBuffer.Add(constructedAnnouncement.Substring(j * (DwarfFortress.Cols - 2), j == numberOfLines - 1 ? (constructedAnnouncement.Length - j * (DwarfFortress.Cols - 2)) : (DwarfFortress.Cols - 2)));
-                }
-                for (int j = 0; j < numberOfLines; j++)
-                {
-                    if (j != numberOfLines - 1)
-                    {
-                        var spaceIndex = splitBuffer[j].LastIndexOf(' ');
-                        var spaceChop = splitBuffer[j].Substring(spaceIndex);
-                        splitBuffer[j] = splitBuffer[j].Remove(spaceIndex);
-                        splitBuffer[j + 1] = spaceChop.Replace(" ", "") + splitBuffer[j + 1];
-                    }
-                    DwarfFortress.FontManager.DrawString(splitBuffer[j], spriteBatch, font, new Vector2(1, i + 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[pair.Key].color], ColorManager.Black));
-                    i++;
-                }
-            }
             if (NumberBuffered != 0)
             {
-                RenderAnnouncement(AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Key, AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered].Value, spriteBatch, font);
+                RenderAnnouncement(AnnouncementBuffer[AnnouncementBuffer.Count - NumberBuffered], spriteBatch, font);
             }
+        }
+
+        public void WindowResize()
+        {
+            foreach (AnnouncementInstance announcement in AnnouncementBuffer)
+            {
+                announcement.Lines = announcement.ReconstructLineArray();
+            }
+        }
+
+        public void RenderAnnouncementList(SpriteBatch spriteBatch, Texture2D font)
+        {
+            var currentScroll = PageNumber*(DwarfFortress.Rows - 2) + 1;
+            var currentPosition = 0;
+            var renderPosition = 0;
+            foreach (var instance in AnnouncementBuffer)
+            {
+                currentPosition += instance.NumberOfLines;
+                if (currentPosition < currentScroll || currentPosition >= currentScroll + DwarfFortress.Rows-2) continue;
+                for (var renderOffset = 0;renderOffset < instance.Lines.Count;renderOffset++)
+                {
+                    DwarfFortress.FontManager.DrawString(instance.Lines[renderOffset], spriteBatch, font, new Vector2(1, renderPosition + renderOffset + 1), new ColorPair(ColorManager.ColorList[(int)instance.Color], ColorManager.Black));
+                }
+                renderPosition += instance.Lines.Count;
+            }
+            NumberOfPages = (int) Math.Ceiling((double) currentPosition/(DwarfFortress.Rows - 2));
+            if (NumberOfPages == 0) NumberOfPages++;
+            if (PageNumber > NumberOfPages) PageNumber = NumberOfPages;
+            if (PageNumber < 0) PageNumber = 0;
+            DwarfFortress.FontManager.DrawString("Page " + (PageNumber + 1) + "/" + NumberOfPages, spriteBatch, font, new Vector2(2, 0), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
         }
 
         public AnnouncementManager()
@@ -406,7 +455,22 @@ namespace DwarfFortressXNA.Managers
             {
                 AnnouncementTextList.Add(ann.announcementType, ann);
             }
-            AnnouncementBuffer = new List<KeyValuePair<AnnouncementType, List<string>>>();
+            AnnouncementBuffer = new List<AnnouncementInstance>();
+        }
+
+        public void ClearBuffered()
+        {
+            for (var i = NumberBuffered; i > 0; i--)
+            {
+                if (AnnouncementTextList[AnnouncementBuffer[AnnouncementBuffer.Count - i].Type].box)
+                {
+                    NumberBuffered = i;
+                    AnnouncementTimer = 300;
+                    return;
+                }
+            }
+            NumberBuffered = 0;
+            AnnouncementTimer = 300;
         }
 
         public string ConstructAnnouncement(AnnouncementType announcementType, List<string> arguments)
@@ -417,31 +481,31 @@ namespace DwarfFortressXNA.Managers
             return final;
         }
 
-        public void RenderAnnouncement(AnnouncementType announcementType, List<string> arguments,
+        public void RenderAnnouncement(AnnouncementInstance instance,
             SpriteBatch spriteBatch, Texture2D font)
         {
-            var finalText = ConstructAnnouncement(announcementType, arguments);
-            if (!Char.IsPunctuation(finalText[finalText.Length - 1])) finalText += '.';
+            var finalText = ConstructAnnouncement(instance.Type, instance.Arguments);
             var extraText = "";
+            if (!Char.IsPunctuation(finalText[finalText.Length - 1])) finalText += '.';
             if (!DwarfFortress.BoxLocked)
             {
                 if (finalText.Length/2 > (DwarfFortress.Cols - 2)/2)
                 {
                     finalText = finalText.Substring((int)(Math.Abs(AnnouncementTimer - 300) * ((finalText.Length - ((DwarfFortress.Cols - 2) / 2)) / 300f)), ((DwarfFortress.Cols - 2) / 2));
-                    if(extraText == "") DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
-                    else
+                    DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)instance.Color], ColorManager.Black));
+                    /*else
                     {
-                        DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2)-7, DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
+                        DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2) - 7, DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)instance.Color], ColorManager.Black));
                         DwarfFortress.FontManager.DrawString("[CONT.]", spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2) + (finalText.Length-7), DwarfFortress.Rows - 1), new ColorPair(ColorManager.DarkGrey, ColorManager.Black));
 
-                    }
+                    }*/
                 }
-                else DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
+                else DwarfFortress.FontManager.DrawString(finalText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (finalText.Length / 2), DwarfFortress.Rows - 1), new ColorPair(ColorManager.ColorList[(int)instance.Color], ColorManager.Black));
             }
             if (NumberBuffered > 1) DwarfFortress.FontManager.DrawString(NumberBuffered.ToString(CultureInfo.InvariantCulture), spriteBatch, font, new Vector2(1, DwarfFortress.Rows - 1), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
-            if (AnnouncementTextList[announcementType].box && DwarfFortress.BoxLocked)
+            if (AnnouncementTextList[instance.Type].box && DwarfFortress.BoxLocked)
             {
-                DwarfFortress.FontManager.DrawBoxedText(finalText + extraText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (40 / 2) - 6, 4), new Vector2(53, 3 + (int)Math.Floor(finalText.Length / 53d)), new ColorPair(ColorManager.ColorList[(int)AnnouncementTextList[announcementType].color], ColorManager.Black));
+                DwarfFortress.FontManager.DrawBoxedText(finalText + extraText, spriteBatch, font, new Vector2((DwarfFortress.Cols / 2) - (40 / 2) - 6, 4), new Vector2(53, 3 + (int)Math.Floor(finalText.Length / 53d)), new ColorPair(ColorManager.ColorList[(int)instance.Color], ColorManager.Black));
             }
         }
 
@@ -454,8 +518,10 @@ namespace DwarfFortressXNA.Managers
                 DwarfFortress.BoxLocked = true;
                 AnnouncementTimer = DwarfFortress.FrameLimit*3;
             }
-            AnnouncementBuffer.Add(new KeyValuePair<AnnouncementType, List<string>>(announcementType, arguments));
+            var announcement = new AnnouncementInstance(announcementType, AnnouncementTextList[announcementType].color, arguments);
+            AnnouncementBuffer.Add(announcement);
             NumberBuffered++;
+
         }
     }
 }

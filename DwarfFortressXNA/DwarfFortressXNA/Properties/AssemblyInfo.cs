@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DwarfFortressXNA")]
-[assembly: AssemblyProduct("DwarfFortressXNA")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2015")]
+[assembly: AssemblyTitle("DFXNA")]
+[assembly: AssemblyProduct("DFXNA")]
+[assembly: AssemblyDescription("Dwarf Fortress: XNA Edition")]
+[assembly: AssemblyCompany("Punkt Creative")]
+[assembly: AssemblyCopyright("Copyright © Ethan Brooks 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyVersion("0.1.10.1")]

@@ -78,12 +78,14 @@ namespace DwarfFortressXNA.Objects
             }
             if (token.StartsWith("[ATTACK:"))
                 {
+                    // ReSharper disable once UnusedVariable
                     var name = split[1];
                     var finalPartToken = "";
                     for (int i = 2; i < split.Length; i++)
                     {
                         finalPartToken += finalPartToken + ":";
                     }
+                    // ReSharper disable once RedundantAssignment
                     finalPartToken = RawFile.StripTokenEnding(finalPartToken);
                     //TODO: BodyPart/Tissue search
                 }

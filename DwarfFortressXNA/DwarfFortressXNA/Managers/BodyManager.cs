@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Windows.Forms.VisualStyles;
 using DwarfFortressXNA.Objects;
 
 namespace DwarfFortressXNA.Managers
