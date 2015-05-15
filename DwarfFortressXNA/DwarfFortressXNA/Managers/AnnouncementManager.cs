@@ -35,9 +35,9 @@ namespace DwarfFortressXNA.Managers
         public List<string> Lines;
         public int NumberOfLines;
         public string Constructed;
-        public List<string> Arguments; 
-
-        public AnnouncementInstance(AnnouncementType type, ColorRaw color, List<string> args)
+        public List<string> Arguments;
+        public Vector2 RecenterPosition;
+        public AnnouncementInstance(AnnouncementType type, ColorRaw color, List<string> args, int reX = -1, int reY = -1)
         {
             Type = type;
             Color = color;
@@ -45,6 +45,7 @@ namespace DwarfFortressXNA.Managers
             Constructed = DwarfFortress.AnnouncementManager.ConstructAnnouncement(type, args);
             Lines = ReconstructLineArray();
             NumberOfLines = Lines.Count;
+            if(reX != -1 && reY != -1) RecenterPosition = new Vector2(reX, reY);
         }
 
         public List<string> ReconstructLineArray()
@@ -440,7 +441,7 @@ namespace DwarfFortressXNA.Managers
             }
             NumberOfPages = (int) Math.Ceiling((double) currentPosition/(DwarfFortress.Rows - 2));
             if (NumberOfPages == 0) NumberOfPages++;
-            if (PageNumber > NumberOfPages) PageNumber = NumberOfPages;
+            if (PageNumber > NumberOfPages) PageNumber = NumberOfPages-1;
             if (PageNumber < 0) PageNumber = 0;
             DwarfFortress.FontManager.DrawString("Page " + (PageNumber + 1) + "/" + NumberOfPages, spriteBatch, font, new Vector2(2, 0), new ColorPair(ColorManager.Black, ColorManager.LightGrey));
         }
@@ -509,7 +510,7 @@ namespace DwarfFortressXNA.Managers
             }
         }
 
-        public void AnnouncementEvent(AnnouncementType announcementType, List<string> arguments)
+        public void AnnouncementEvent(AnnouncementType announcementType, List<string> arguments, int recenterX = -1, int recenterY = -1)
         {
             // ReSharper disable once CoVariantArrayConversion
             if (AnnouncementTextList[announcementType].pause) DwarfFortress.Paused = true;
@@ -518,6 +519,10 @@ namespace DwarfFortressXNA.Managers
                 DwarfFortress.BoxLocked = true;
                 AnnouncementTimer = DwarfFortress.FrameLimit*3;
             }
+            /*if (AnnouncementTextList[announcementType].recenter)
+            {
+                if(recenterX < 0 || recenterY < 0) throw new Exception("Bad recenter coords: " + recenterX + "/" + recenterY + "!");
+            }*/
             var announcement = new AnnouncementInstance(announcementType, AnnouncementTextList[announcementType].color, arguments);
             AnnouncementBuffer.Add(announcement);
             NumberBuffered++;

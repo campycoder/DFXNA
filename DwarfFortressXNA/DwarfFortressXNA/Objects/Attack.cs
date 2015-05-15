@@ -5,12 +5,12 @@ namespace DwarfFortressXNA.Objects
     public class Attack
     {
         public string Name;
-        public string BodypartToken;
+        public List<string> BodyPartRefs; 
         // ReSharper disable once UnusedParameter.Local
-        public Attack(string name, string bodypartToken, List<string> tokenList)
+        public Attack(string name, List<string> bodyPartRefs)
         {
             Name = name;
-            BodypartToken = bodypartToken;
+            BodyPartRefs = bodyPartRefs;
         }
     }
 }

@@ -274,6 +274,7 @@ namespace DwarfFortressXNA.Objects
     /// </summary>
     public class Creature
     {
+        public string ReferenceName;
         public List<string> GlobalCasteTokens;
         public Dictionary<string, Caste> CasteList;
         public Dictionary<string, Material> MaterialList;
@@ -323,8 +324,9 @@ namespace DwarfFortressXNA.Objects
         public bool VerminRotter;
         public bool VerminSoil;
         public bool VerminSoilColony;
-        public Creature(List<string> tokenList)
+        public Creature(string referenceName, List<string> tokenList)
         {
+            ReferenceName = referenceName;
             CasteList = new Dictionary<string, Caste>();
             MaterialList = new Dictionary<string, Material>();
             TissueList = new Dictionary<string, Tissue>();
@@ -379,7 +381,7 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[CASTE:"))
                 {
                     var name = RawFile.StripTokenEnding(split[1]);
-                    var caste = new Caste(name);
+                    var caste = new Caste(name, ReferenceName);
                     foreach (var t in GlobalCasteTokens)
                     {
                         caste.ParseToken(t, this);

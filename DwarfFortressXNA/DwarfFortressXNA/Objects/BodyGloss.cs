@@ -4,18 +4,14 @@ namespace DwarfFortressXNA.Objects
 {
     public class BodyGloss
     {
-        public Dictionary<string, string> Glossary;
+        public KeyValuePair<string, string> Singular;
+        public KeyValuePair<string, string> Plural; 
 
         public BodyGloss(string token)
         {
-            Glossary = new Dictionary<string, string>();
             var tokenSplit = token.Split(new[] {':'});
-            for (var i = 2; i < tokenSplit.Length; i+=2)
-            {
-                var originalName = tokenSplit[i];
-                var newName = RawFile.StripTokenEnding(tokenSplit[i + 1]);
-                Glossary.Add(originalName, newName);
-            }
+            Singular = new KeyValuePair<string, string>(tokenSplit[2],tokenSplit[3]);
+            Plural = new KeyValuePair<string, string>(tokenSplit[4], RawFile.StripTokenEnding(tokenSplit[5]));
         }
     }
 }

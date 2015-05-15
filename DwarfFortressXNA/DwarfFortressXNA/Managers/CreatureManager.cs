@@ -13,8 +13,9 @@ namespace DwarfFortressXNA.Managers
 
         public void AddToList(List<string> currentBuffer)
         {
-            var creature = new Creature(currentBuffer);
-            CreatureList.Add(RawFile.StripTokenEnding(currentBuffer[0].Remove(0,10)), creature);
+            var name = RawFile.StripTokenEnding(currentBuffer[0].Remove(0, 10));
+            var creature = new Creature(name, currentBuffer);
+            CreatureList.Add(name, creature);
         }
 
         public void ParseFromTokens(List<string> tokens)
