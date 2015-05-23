@@ -283,7 +283,7 @@ namespace DwarfFortressXNA.Objects
         public List<string> CurrentSelectedCastes;
         public List<string> CurrentSelectedMaterials;
         public List<string> CurrentSelectedTissues; 
-        public Dictionary<ProfessionTags, KeyValuePair<string, string>> ProfessionList; 
+        public Dictionary<ProfessionTags, Tuple<string, string>> ProfessionList; 
         public char Tile;
         public char AltTile;
         public char SoldierTile;
@@ -336,7 +336,7 @@ namespace DwarfFortressXNA.Objects
             GlobalCasteTokens = new List<string>();
             TagList = new List<CreatureTags>();
             SphereList = new List<Spheres>();
-            ProfessionList = new Dictionary<ProfessionTags, KeyValuePair<string, string>>();
+            ProfessionList = new Dictionary<ProfessionTags, Tuple<string, string>>();
             //Here it is.
             //The big one.
             //Three hundred and some odd tokens to be parsed.
@@ -529,7 +529,7 @@ namespace DwarfFortressXNA.Objects
                     if (!Enum.TryParse(split[1], out professionTags)) return;
                     var single = split[2];
                     var plural = RawFile.StripTokenEnding(split[3]);
-                    ProfessionList.Add(professionTags, new KeyValuePair<string, string>(single, plural));
+                    ProfessionList.Add(professionTags, new Tuple<string, string>(single, plural));
                 }
                 else if (tokenList[i] == "[SAVAGE]")
                 {

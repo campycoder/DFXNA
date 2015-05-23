@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace DwarfFortressXNA.Objects
 {
     public class BodyGloss
     {
-        public KeyValuePair<string, string> Singular;
-        public KeyValuePair<string, string> Plural; 
+        public Tuple<string, string> Singular;
+        public Tuple<string, string> Plural; 
 
         public BodyGloss(string token)
         {
             var tokenSplit = token.Split(new[] {':'});
-            Singular = new KeyValuePair<string, string>(tokenSplit[2],tokenSplit[3]);
-            Plural = new KeyValuePair<string, string>(tokenSplit[4], RawFile.StripTokenEnding(tokenSplit[5]));
+            Singular = new Tuple<string, string>(tokenSplit[2],tokenSplit[3]);
+            Plural = new Tuple<string, string>(tokenSplit[4], RawFile.StripTokenEnding(tokenSplit[5]));
         }
     }
 }

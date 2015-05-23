@@ -38,7 +38,7 @@ namespace DwarfFortressXNA.Objects
         public List<CasteFlags> CasteFlagList;
         public Dictionary<string, BodyPart> BodyPartList;
         public Dictionary<string, Dictionary<BodyAppearanceModifierState, int>> BodyAppearanceModifierList;
-        public Dictionary<KeyValuePair<int, int>, int> BodySizeList;
+        public Dictionary<Tuple<int, int>, int> BodySizeList;
         public Dictionary<string, Material> MaterialList;
         public Dictionary<string, Tissue> TissueList; 
         public int AttackPop;
@@ -60,7 +60,7 @@ namespace DwarfFortressXNA.Objects
             CasteFlagList = new List<CasteFlags>();
             BodyPartList = new Dictionary<string, BodyPart>();
             BodyAppearanceModifierList = new Dictionary<string, Dictionary<BodyAppearanceModifierState, int>>();
-            BodySizeList = new Dictionary<KeyValuePair<int, int>, int>();
+            BodySizeList = new Dictionary<Tuple<int, int>, int>();
             MaterialList = new Dictionary<string, Material>();
             TissueList = new Dictionary<string, Tissue>();
         }
@@ -176,7 +176,7 @@ namespace DwarfFortressXNA.Objects
                 var years = RawFile.GetIntFromToken(split[1]);
                 var days = RawFile.GetIntFromToken(split[2]);
                 var size = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
-                BodySizeList.Add(new KeyValuePair<int, int>(years, days), size);
+                BodySizeList.Add(new Tuple<int, int>(years, days), size);
             }
             else if (token.StartsWith("[BODYGLOSS:"))
             {
@@ -189,18 +189,18 @@ namespace DwarfFortressXNA.Objects
                     {
                         for (var i = 0; i < BodyPartList[bodyPart].IndividualNames.Count; i++)
                         {
-                            BodyPartList[bodyPart].IndividualNames[i] = BodyPartList[bodyPart].IndividualNames[i].Replace(gloss.Singular.Key, gloss.Singular.Value);
+                            BodyPartList[bodyPart].IndividualNames[i] = BodyPartList[bodyPart].IndividualNames[i].Replace(gloss.Singular.Item1, gloss.Singular.Item2);
                         } 
                     }
                     if (BodyPartList[bodyPart].IndividualPlurals != null)
                     {
                         for (var i = 0; i < BodyPartList[bodyPart].IndividualPlurals.Count; i++)
                         {
-                            BodyPartList[bodyPart].IndividualPlurals[i] = BodyPartList[bodyPart].IndividualPlurals[i].Replace(gloss.Plural.Key, gloss.Plural.Value);
+                            BodyPartList[bodyPart].IndividualPlurals[i] = BodyPartList[bodyPart].IndividualPlurals[i].Replace(gloss.Plural.Item1, gloss.Plural.Item2);
                         } 
                     }
-                    BodyPartList[bodyPart].Name = BodyPartList[bodyPart].Name.Replace(gloss.Singular.Key, gloss.Singular.Value);
-                    BodyPartList[bodyPart].Plural = BodyPartList[bodyPart].Plural.Replace(gloss.Plural.Key, gloss.Plural.Value);
+                    BodyPartList[bodyPart].Name = BodyPartList[bodyPart].Name.Replace(gloss.Singular.Item1, gloss.Singular.Item2);
+                    BodyPartList[bodyPart].Plural = BodyPartList[bodyPart].Plural.Replace(gloss.Plural.Item1, gloss.Plural.Item2);
                 }
             }
             else if (token.StartsWith("[BP_ADD_TYPE:"))
