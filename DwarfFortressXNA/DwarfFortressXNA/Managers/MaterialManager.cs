@@ -3,7 +3,7 @@ using DwarfFortressXNA.Objects;
 
 namespace DwarfFortressXNA.Managers
 {
-    public class MaterialManager
+    public class MaterialManager : IObjectManager
     {
         public Dictionary<string, Material> MaterialTemplateList;
         public Dictionary<string, Material> InorganicMaterialList;

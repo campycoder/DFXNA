@@ -7,6 +7,7 @@ namespace DwarfFortressXNA.Objects
 {
     public enum Spheres
     {
+        NULL,
         AGRICULTURE,
         ANIMALS,
         ART,
@@ -140,6 +141,7 @@ namespace DwarfFortressXNA.Objects
     }
     public enum ProfessionTags
     {
+        NULL,
         MINER,
         WOODWORKER,
         CARPENTER,
@@ -254,6 +256,7 @@ namespace DwarfFortressXNA.Objects
     }
     public enum CreatureTags
     {
+        NULL,
         ARTIFICAL_HIVEABLE,
         EQUIPMENT_WAGON,
         DOES_NOT_EXIST,

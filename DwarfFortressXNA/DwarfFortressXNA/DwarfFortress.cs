@@ -53,6 +53,7 @@ namespace DwarfFortressXNA
         public static BodyManager BodyManager;
         public static AnnouncementManager AnnouncementManager;
         public static CreatureManager CreatureManager;
+        public static InteractionManager InteractionManager;
 
 
         public GameState GameState = GameState.MENU;
@@ -95,6 +96,7 @@ namespace DwarfFortressXNA
             BodyManager = new BodyManager();
             CreatureManager = new CreatureManager();
             AnnouncementManager = new AnnouncementManager();
+            InteractionManager = new InteractionManager();
             for (int i = 0; i < 500; i++)
             {
                 var announcementType = (AnnouncementType)Random.Next(89, 94);
@@ -123,6 +125,7 @@ namespace DwarfFortressXNA
             var rawFileIm = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
             var rawFileIs = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
             var rawFileIt = new RawFile("./Raw/Objects/inorganic_metal.txt");
+            var rawFileIn = new RawFile("./Raw/Objects/interaction_standard.txt");
             var rawFileTt = new RawFile("./Raw/Objects/tissue_template_default.txt");
             var rawFileBd = new RawFile("./Raw/Objects/body_default.txt");
             var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");

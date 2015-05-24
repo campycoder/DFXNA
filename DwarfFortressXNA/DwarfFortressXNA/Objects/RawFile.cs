@@ -86,7 +86,10 @@ namespace DwarfFortressXNA.Objects
                 case RawType.CREATURE:
                     DwarfFortress.CreatureManager.ParseFromTokens(TokensRaw);
                     break;
-            }
+                case RawType.INTERACTION:
+                    DwarfFortress.InteractionManager.ParseFromTokens(TokensRaw);
+                    break;
+;            }
         }
 
         public static int GetIntFromToken(string number)

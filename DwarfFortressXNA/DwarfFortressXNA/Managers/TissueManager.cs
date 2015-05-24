@@ -3,7 +3,7 @@ using DwarfFortressXNA.Objects;
 
 namespace DwarfFortressXNA.Managers
 {
-    public class TissueManager
+    public class TissueManager : IObjectManager
     {
         public Dictionary<string, Tissue> TissueTemplateList;
 

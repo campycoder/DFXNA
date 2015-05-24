@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 namespace DwarfFortressXNA.Objects
@@ -103,6 +102,7 @@ namespace DwarfFortressXNA.Objects
 
     public enum InteractionCreatureRequirement
     {
+        NULL,
         FIT_FOR_ANIMATION,
         FIT_FOR_RESURRECTION,
         HAS_BLOOD,
@@ -143,6 +143,7 @@ namespace DwarfFortressXNA.Objects
 
     public enum InteractionBreathAttack
     {
+        NULL,
         TRAILING_DUST_FLOW,
         TRAILING_VAPOR_FLOW,
         TRAILING_GAS_FLOW,
@@ -167,6 +168,7 @@ namespace DwarfFortressXNA.Objects
 
     public enum InteractionEffectType
     {
+        NULL,
         ANIMATE,
         ADD_SYNDROME,
         RESURRECT,
@@ -178,12 +180,14 @@ namespace DwarfFortressXNA.Objects
 
     public enum InteractionEffectFrequency
     {
+        NULL,
         WEEKLY,
         MONTHLY
     }
 
     public enum InteractionEffectLocation
     {
+        NULL,
         IN_WATER,
         IN_MAGMA,
         NO_WATER,
@@ -274,6 +278,7 @@ namespace DwarfFortressXNA.Objects
         public string CannotHaveSyndromeClass;
         public InteractionBreathAttack BreathAttack;
         public Material Material;
+        public bool UseContextMaterial;
 
         public InteractionTarget(InteractionTargetType type)
         {
@@ -329,9 +334,34 @@ namespace DwarfFortressXNA.Objects
             {
                 CannotTargetIfAlreadyAffected = true;
             }
-            else if (token.StartsWith("[IT_CANNOT_HAVE_SYNDROME_CLASSL:"))
+            else if (token.StartsWith("[IT_CANNOT_HAVE_SYNDROME_CLASS:"))
             {
                 //TODO: Fix on syndrome implementation
+                CannotHaveSyndromeClass = RawFile.StripTokenEnding(split[1]);
+            }
+            else if (token.StartsWith("[IT_MATERIAL"))
+            {
+                switch (split[1])
+                {
+                    case "FLOW":
+                        InteractionBreathAttack breathAttack;
+                        if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out breathAttack))
+                            throw new TokenParseException("InteractionTarget",
+                                "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[2]) + "!");
+                        BreathAttack = breathAttack;
+                        break;
+                    case "MATERIAL":
+                        //TODO: Parse Material token.
+                        InteractionBreathAttack breathAttackType;
+                        if (!Enum.TryParse(RawFile.StripTokenEnding(split[3]), out breathAttackType))
+                            throw new TokenParseException("InteractionTarget",
+                                "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[3]) + "!");
+                        BreathAttack = breathAttackType;
+                        break;
+                    case "CONTEXT_MATERIAL":
+                        UseContextMaterial = true;
+                        break;
+                }
             }
         }
     }
@@ -339,7 +369,7 @@ namespace DwarfFortressXNA.Objects
     public class InteractionEffect
     {
         public InteractionEffectType Type;
-        public string Target;
+        public List<string> Targets;
         public InteractionEffectFrequency Frequency;
         public bool Immediate;
         public InteractionEffectLocation Location;
@@ -350,11 +380,49 @@ namespace DwarfFortressXNA.Objects
         public InteractionEffect(InteractionEffectType type)
         {
             Type = type;
+            Targets = new List<string>();
         }
 
         public void ParseToken(string token)
         {
             var split = token.Split(new[] { ':' });
+            if (token.StartsWith("[IE_TARGET:"))
+            {
+                Targets.Add(RawFile.StripTokenEnding(split[1]));
+            }
+            else if (token.StartsWith("[IE_INTERMITTENT:"))
+            {
+                InteractionEffectFrequency freq;
+                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out freq))
+                    throw new TokenParseException("InteractionEffect",
+                        "Bad InteractionEffectFrequency " + RawFile.StripTokenEnding(split[1]) + "!");
+                Frequency = freq;
+            }
+            else if (token == "[IE_IMMEDIATE]")
+            {
+                Immediate = true;
+            }
+            else if (token.StartsWith("[IE_LOCATION:"))
+            {
+                InteractionEffectLocation loc;
+                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out loc))
+                    throw new TokenParseException("InteractionEffect",
+                        "Bad InteractionEffectLocation " + RawFile.StripTokenEnding(split[1]) + "!");
+                Location = loc;
+            }
+            else if (token.StartsWith("[IE_ARENA_NAME:"))
+            {
+                ArenaName = RawFile.StripTokenEnding(split[1]);
+            }
+            else if (token.StartsWith("[IE_GRIME_LEVEL:"))
+            {
+                GrimeLevel = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[1]));
+            }
+            else if (token.StartsWith("[IE_SYNDROME_TAG:"))
+            {
+                //TODO:Fix on Syndrome implementation
+                SyndromeTag = RawFile.StripTokenEnding(split[1]);
+            }
         }
     }
 
@@ -366,22 +434,18 @@ namespace DwarfFortressXNA.Objects
         public string SelectedTarget;
         public bool Generated;
 
-        public Interaction()
+        public Interaction(List<string> tokenList)
         {
             InteractionSources = new List<InteractionSource>();
             InteractionTargets = new Dictionary<string, InteractionTarget>();
             InteractionEffects = new List<InteractionEffect>();
-        }
-
-        public void ParseTokenList(List<string> tokenList)
-        {
             for (var i = 0; i < tokenList.Count; i++)
             {
-                var split = tokenList[i].Split(new[] {':'});
+                var split = tokenList[i].Split(new[] { ':' });
                 if (!tokenList[i].StartsWith("[")) continue;
                 if (RawFile.NumberOfTokens(tokenList[i]) > 1)
                 {
-                    var multiple = tokenList[i].Split(new[] {']'}).ToList();
+                    var multiple = tokenList[i].Split(new[] { ']' }).ToList();
                     multiple.Remove("");
                     for (var j = 0; j < multiple.Count; j++)
                     {
@@ -408,7 +472,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionTargetType type;
                     var name = split[1];
-                    if(!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out type)) throw new TokenParseException("Interaction", "Bad InteractionTargetType " + RawFile.StripTokenEnding(split[2]) + "!");
+                    if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out type)) throw new TokenParseException("Interaction", "Bad InteractionTargetType " + RawFile.StripTokenEnding(split[2]) + "!");
                     InteractionTargets.Add(name, new InteractionTarget(type));
                     SelectedTarget = name;
                 }
@@ -423,11 +487,11 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionTargets[SelectedTarget].ParseToken(tokenList[i]);
                 }
-                else if(tokenList[i].StartsWith("[I_EFFECT:"))
+                else if (tokenList[i].StartsWith("[I_EFFECT:"))
                 {
                     InteractionEffectType type;
                     var name = RawFile.StripTokenEnding(split[1]);
-                    if(!Enum.TryParse(name, out type)) throw new TokenParseException("Interaction", "Bad InteractionEffectType " + name + "!"); 
+                    if (!Enum.TryParse(name, out type)) throw new TokenParseException("Interaction", "Bad InteractionEffectType " + name + "!");
                     InteractionEffects.Add(new InteractionEffect(type));
                 }
                 else if (tokenList[i].StartsWith("[IE_TARGET:") || tokenList[i].StartsWith("[IE_INTERMITTENT:") ||

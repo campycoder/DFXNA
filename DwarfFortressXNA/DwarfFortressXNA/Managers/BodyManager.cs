@@ -3,7 +3,7 @@ using DwarfFortressXNA.Objects;
 
 namespace DwarfFortressXNA.Managers
 {
-    public class BodyManager
+    public class BodyManager : IObjectManager
     {
         public Dictionary<string, BodyDetailPlan> BodyDetailPlanList;
         public Dictionary<string, BodyTemplate> BodyTemplateList;
