@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DwarfFortressXNA.Managers;
 
 namespace DwarfFortressXNA.Objects
 {
@@ -17,6 +18,13 @@ namespace DwarfFortressXNA.Objects
         BENIGN,
         BLOODSUCKER,
         BONECARN,
+        CAN_LEARN,
+        CAN_SPEAK,
+        CANNOT_CLIMB,
+        CANNOT_JUMP,
+        CANNOT_UNDEAD,
+        CANOPENDOORS,
+        CARNIVORE,
         MEGABEAST
     }
 
@@ -52,6 +60,10 @@ namespace DwarfFortressXNA.Objects
         public Material BloodMaterial;
         public State BloodState;
         public int BuildingDestroyer;
+        public char AltTile;
+        public ColorPair Color;
+        public Dictionary<string, InteractionUsage> InteractionUsageList;
+        public string SelectedInteractionUsage;
         public Caste(string name, string parentName)
         {
             Name = name;
@@ -63,6 +75,7 @@ namespace DwarfFortressXNA.Objects
             BodySizeList = new Dictionary<Tuple<int, int>, int>();
             MaterialList = new Dictionary<string, Material>();
             TissueList = new Dictionary<string, Tissue>();
+            InteractionUsageList = new Dictionary<string, InteractionUsage>();
         }
 
         public void ParseToken(string token, object parent)
@@ -116,10 +129,10 @@ namespace DwarfFortressXNA.Objects
             else if (token.StartsWith("[BLOOD:"))
             {
                 var statePos = 2;
-                if (split.Length == 3) BloodMaterial = MaterialSearch(split[1],"NONE");
+                if (split.Length == 3) BloodMaterial = DwarfFortress.MaterialManager.MaterialSearch(split[1], "NONE");
                 else 
                 {
-                    BloodMaterial = MaterialSearch(split[1], split[2], parent);
+                    BloodMaterial = DwarfFortress.MaterialManager.MaterialSearch(split[1], split[2], parent);
                     statePos++;
                 }
                 if (!Enum.TryParse(RawFile.StripTokenEnding(split[statePos]), out BloodState)) throw new TokenParseException("Caste", "Bad material state" + RawFile.StripTokenEnding(split[statePos]) + "!");
@@ -220,9 +233,35 @@ namespace DwarfFortressXNA.Objects
             }
             else if (token.StartsWith("[CAN_DO_INTERACTION:"))
             {
-                //TODO: Implement interactions   
+                var interactionName = RawFile.StripTokenEnding(split[1]);
+                if(!DwarfFortress.InteractionManager.InteractionList.ContainsKey(interactionName)) throw new TokenParseException("Caste", "Interaction " + interactionName + " doesn't exist or hasn't been loaded!");
+                InteractionUsageList.Add(interactionName, new InteractionUsage(MaterialList));
+                SelectedInteractionUsage = interactionName;
             }
-
+            else if (token.StartsWith("[CDI:"))
+            {
+                InteractionUsageList[SelectedInteractionUsage].ParseToken(token);
+            }
+            else if (token.StartsWith("[CASTE_ALTTILE:"))
+            {
+                var strippedChar = RawFile.StripTokenEnding(split[1]);
+                if (strippedChar.StartsWith("'"))
+                {
+                    strippedChar = strippedChar.Replace("'", "");
+                    AltTile = strippedChar[0];
+                }
+                else AltTile = DwarfFortress.FontManager.Codepage[RawFile.GetIntFromToken(strippedChar)];
+            }
+            else if (token.StartsWith("[CASTE_COLOR:"))
+            {
+                var fore = RawFile.GetIntFromToken(split[1]);
+                if (fore > 7 || fore < 0) throw new TokenParseException("Caste", "CASTE_COLOR component foreground invalid (Higher than seven or lower than zero): " + fore + "!");
+                var back = RawFile.GetIntFromToken(split[2]);
+                if (back > 7 || back < 0) throw new TokenParseException("Caste", "CASTE_COLOR component background invalid (Higher than seven or lower than zero): " + back + "!");
+                var bright = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
+                if(bright != 0 && bright != 1) throw new TokenParseException("Caste", "CASTE_COLOR component brightness invalid (Not one or zero): " + bright + "!");
+                Color = DwarfFortress.FontManager.ColorManager.GetPairFromTriad(fore, back, bright);
+            }
             else
             {
                 CasteFlags flagBuffer;
@@ -251,23 +290,6 @@ namespace DwarfFortressXNA.Objects
                     break;
             }
             return bodyPartReturn;
-        }
-
-        public Material MaterialSearch(string type, string param, object parent = null)
-        {
-            switch (type)
-            {
-                case "INORGANIC":
-                    if(!DwarfFortress.MaterialManager.InorganicMaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad inorganic material " + param + "!");
-                    return DwarfFortress.MaterialManager.InorganicMaterialList[param];
-                case "LOCAL_CREATURE_MAT":
-                    if(parent == null) throw new Exception("Parent wasn't passed to MaterialSearch on LocalCreatureMat!");
-                    var parentObject = (Creature) parent;
-                    if(!parentObject.MaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad LocalCreature material " + param + "!");
-                    return parentObject.MaterialList[param];
-                default:
-                    return null;
-            }
         }
     }
 }

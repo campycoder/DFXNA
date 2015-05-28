@@ -9,9 +9,11 @@ namespace DwarfFortressXNA.Managers
     {
         public Dictionary<string, Song> SongList;
         public string CurrentSong = "NONE";
-        public SoundManager()
+        public bool SoundEnabled = true;
+        public SoundManager(bool sound)
         {
             SongList = new Dictionary<string,Song>();
+            SoundEnabled = sound;
         }
 
         public void OnLoad(ContentManager content)
@@ -22,6 +24,7 @@ namespace DwarfFortressXNA.Managers
 
         public void PlaySong(string songName)
         {
+            if (!SoundEnabled) return;
             StopCurrentSong();
             if (!SongList.ContainsKey(songName)) throw new Exception("Bad song name requested: " + songName + "!");
             MediaPlayer.Play(SongList[songName]);

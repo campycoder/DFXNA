@@ -1,4 +1,5 @@
-﻿using DwarfFortressXNA.Managers;
+﻿using System.Globalization;
+using DwarfFortressXNA.Managers;
 using DwarfFortressXNA.Objects;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,6 +11,14 @@ using System.IO;
 namespace DwarfFortressXNA
 {
 
+    public enum SidebarState
+    {
+        FULLBAR,
+        HALFBAR,
+        NONE,
+        MAP,
+        HALFBAR_WITH_MAP
+    }
     public enum GameState
     {
         INTRO,
@@ -40,6 +49,7 @@ namespace DwarfFortressXNA
         public static bool BoxLocked = false;
         public bool Pdebounce = false;
         public bool EscDebounce = false;
+        public bool TabDebounce = false;
 
         int selection;
         bool arrowDeb;
@@ -58,15 +68,21 @@ namespace DwarfFortressXNA
 
         public GameState GameState = GameState.MENU;
         public FortressState FortressState = FortressState.GAME;
+        public SidebarState SidebarState = SidebarState.HALFBAR_WITH_MAP;
 
         public static int Rows = 25;
         public static int Cols = 80;
 
-        public static int MapHeight = Rows * 2;
-        public static int MapWidth = Cols * 2;
+        public static int MapHeight = 192;
+        public static int MapWidth = 192;
+        public static int MapDepth = 100;
+        public static int SurfaceDepth = 10;
 
         public int CursorX = 1;
         public int CursorY = 1;
+
+        public int SelectedZ = 0;
+        public bool ZChangeDebounce = false;
 
         public int CursorBlinkTimer = 20;
         public static int MoveConst = 10;
@@ -75,7 +91,7 @@ namespace DwarfFortressXNA
         public static int FrameLimit = 100;
         public bool CursorOn = true;
 
-        public Tile[,] MaterialMap = new Tile[MapWidth,MapHeight];
+        public Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
 
         int frames;
         private TimeSpan elapsed;
@@ -91,19 +107,19 @@ namespace DwarfFortressXNA
             LanguageManager = new LanguageManager();
             MaterialManager = new MaterialManager();
             TissueManager = new TissueManager();
-            SoundManager = new SoundManager();
             ConfigManager = new ConfigManager();
             BodyManager = new BodyManager();
             CreatureManager = new CreatureManager();
             AnnouncementManager = new AnnouncementManager();
             InteractionManager = new InteractionManager();
-            for (int i = 0; i < 500; i++)
+            for (var i = 0; i < 500; i++)
             {
                 var announcementType = (AnnouncementType)Random.Next(89, 94);
                 AnnouncementManager.AnnouncementEvent(announcementType, new List<string> { "Urist McGenericdwarf" });
             }
             AnnouncementManager.NumberBuffered = 0;
             ConfigManager.LoadConfigFiles();
+            SoundManager = new SoundManager(ConfigManager.GetConfigValueAsBool("SOUND"));
             Cols = ConfigManager.GetConfigValueAsInt("WINDOWEDX");
             Rows = ConfigManager.GetConfigValueAsInt("WINDOWEDY");
             SoundManager.OnLoad(Content);
@@ -137,8 +153,11 @@ namespace DwarfFortressXNA
             {
                 for(var y = 0; y < MapHeight;y++)
                 {
-                    var material = Random.Next(20) == 0 ? null : materials[Random.Next(materials.Count)];
-                    MaterialMap[x, y] = new Tile(material);
+                    for (var z = 0; z < MapDepth; z++)
+                    {
+                        var material = Random.Next(20) == 0 ? null : materials[Random.Next(materials.Count)];
+                        MaterialMap[x, y, z] = new Tile(material); 
+                    } 
                 }
             }
         }
@@ -248,7 +267,7 @@ namespace DwarfFortressXNA
                         }
                         if (Keyboard.GetState().IsKeyUp(Keys.Up) && Keyboard.GetState().IsKeyUp(Keys.Down) && arrowDeb) arrowDeb = false;
                     }
-                    if (FortressState == FortressState.GAME)
+                    if (FortressState == FortressState.GAME || FortressState == FortressState.BUILDING)
                     {
                         AnnouncementManager.Update();
                         if (Keyboard.GetState().IsKeyDown(Keys.Space) && !Pdebounce)
@@ -268,8 +287,12 @@ namespace DwarfFortressXNA
                             {
                                 for (var y = 0; y < MapHeight; y++)
                                 {
-                                    var material = materials[Random.Next(materials.Count)];
-                                    MaterialMap[x, y] = new Tile(material);
+                                    for (var z = 0; z < MapDepth; z++)
+                                    {
+                                        var material = materials[Random.Next(materials.Count)];
+                                        MaterialMap[x, y, z] = new Tile(material);
+                                        
+                                    } 
                                 }
                             }
                             var announcementType = (AnnouncementType) Random.Next(89, 94);
@@ -283,6 +306,51 @@ namespace DwarfFortressXNA
                         if (CursorMoveTimer > 0) CursorMoveTimer--;
                         if (CursorMoveTimer == 0) arrowDeb = false;
 
+                        if ((Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) &&
+                            Keyboard.GetState().IsKeyDown(Keys.OemPeriod) && SelectedZ < MapDepth - 1 && !ZChangeDebounce)
+                        {
+                            SelectedZ++;
+                            ZChangeDebounce = true;
+                        }
+
+                        if ((Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) &&
+                            Keyboard.GetState().IsKeyDown(Keys.OemComma) && SelectedZ > 0 && !ZChangeDebounce)
+                        {
+                            SelectedZ--;
+                            ZChangeDebounce = true;
+                        }
+
+                        if (Keyboard.GetState().IsKeyUp(Keys.OemPeriod) && Keyboard.GetState().IsKeyUp(Keys.OemComma) && ZChangeDebounce)
+                        {
+                            ZChangeDebounce = false;
+                        }
+
+                        if (Keyboard.GetState().IsKeyDown(Keys.Tab) && !TabDebounce)
+                        {
+                            switch (SidebarState)
+                            {
+                                case SidebarState.HALFBAR:
+                                    SidebarState = SidebarState.NONE;
+                                    break;
+                                case SidebarState.NONE:
+                                    SidebarState = SidebarState.MAP;
+                                    break;
+                                case SidebarState.MAP:
+                                    SidebarState = SidebarState.HALFBAR_WITH_MAP;
+                                    break;
+                                case SidebarState.HALFBAR_WITH_MAP:
+                                    SidebarState = SidebarState.FULLBAR;
+                                    break;
+                                case SidebarState.FULLBAR:
+                                    SidebarState = SidebarState.HALFBAR;
+                                    break;
+                            }
+                            TabDebounce = true;
+                        }
+                        if (Keyboard.GetState().IsKeyUp(Keys.Tab) && TabDebounce)
+                        {
+                            TabDebounce = false;
+                        }
                         if (Keyboard.GetState().IsKeyDown(Keys.Down) && CursorY < Rows - 2 && !arrowDeb)
                         {
                             CursorY++;
@@ -315,7 +383,7 @@ namespace DwarfFortressXNA
                             EscDebounce = true;
                         }
                     }
-                    else
+                    if(FortressState != FortressState.GAME)
                     {
                         if (Keyboard.GetState().IsKeyDown(Keys.Escape) && !EscDebounce)
                         {
@@ -384,21 +452,100 @@ namespace DwarfFortressXNA
                 if (ConfigManager.GetConfigValueAsBool("FPS")) FontManager.DrawString("FPS: " + fps + " (" + finalRef + ")", spriteBatch, font, new Vector2(Cols - (Cols / 4), 0), FontManager.ColorManager.GetPairFromTriad(2, 2, 1));
                 switch (FortressState)
                 {
-                    case FortressState.GAME:
+                    default:
                         for (var x = 1; x < Cols - 1; x++)
                         {
                             for (var y = 1; y < Rows - 1; y++)
                             {
                                 if (x < MapWidth && y < MapHeight)
                                 {
-                                    MaterialMap[x - 1, y - 1].RenderTile(spriteBatch, font, new Vector2(x, y));
+                                    MaterialMap[x - 1, y - 1,SelectedZ].RenderTile(spriteBatch, font, new Vector2(x, y));
                                 }
                             }
                         }
                         if (CursorOn) FontManager.DrawCharacter('X', spriteBatch, font, new Vector2(CursorX, CursorY), FontManager.ColorManager.GetPairFromTriad(6, 0, 1));
-                        FontManager.DrawString(MaterialMap[CursorX-1,CursorY-1].GetNameBasedOnState(false, true), spriteBatch, font, new Vector2(Cols/5,0), FontManager.ColorManager.GetPairFromTriad(0,7,0));
+                        FontManager.DrawString(MaterialMap[CursorX-1,CursorY-1,SelectedZ].GetNameBasedOnState(false, true), spriteBatch, font, new Vector2(Cols/5,0), FontManager.ColorManager.GetPairFromTriad(0,7,0));
                         AnnouncementManager.Render(spriteBatch, font);
                         if (Paused) FontManager.DrawString("*PAUSED*", spriteBatch, font, new Vector2(1, 0), FontManager.ColorManager.GetPairFromTriad(3, 2, 1));
+                        var adjustedDepth = SurfaceDepth - SelectedZ;
+                        var depthRender =
+                            ((adjustedDepth > 0 ? "+" : "") + adjustedDepth.ToString(CultureInfo.InvariantCulture))
+                                .ToCharArray();
+                        for (var i = 0; i < depthRender.Length; i++)
+                        {
+                            FontManager.DrawCharacter(depthRender[i],spriteBatch,font, new Vector2(Cols-1,adjustedDepth == 0 ? i + 2 : i + 1), new ColorPair((adjustedDepth > 0 ? ColorManager.Green : (adjustedDepth == 0 ? ColorManager.Black : ColorManager.Red)), ColorManager.LightGrey));
+                        }
+                        switch (SidebarState)
+                        {
+                                //WIDTH OF MAPBAR IS ~22 Characters
+                            case SidebarState.NONE:
+                                break;
+                            case SidebarState.HALFBAR:
+                            {
+                                for (var i = 32; i > 1; i--)
+                                {
+                                    for (var j = 1; j < Rows - 1; j++)
+                                    {
+                                        FontManager.DrawCharacter('█', spriteBatch, font, new Vector2(Cols - i, j),
+                                            new ColorPair(i == 32 ? ColorManager.DarkGrey : ColorManager.Black,
+                                                ColorManager.Black));
+                                    }
+                                }
+                                DrawSidebarText();
+                                break;
+                            }
+                            case SidebarState.FULLBAR:
+                            {
+                                for (var i = 56; i > 1; i--)
+                                {
+                                    for (var j = 1; j < Rows - 1; j++)
+                                    {
+                                        FontManager.DrawCharacter('█', spriteBatch, font, new Vector2(Cols - i, j),
+                                            new ColorPair(i == 56 ? ColorManager.DarkGrey : ColorManager.Black,
+                                                ColorManager.Black));
+                                    }
+                                }
+                                DrawSidebarText();
+                                break;
+                            }
+                            case SidebarState.MAP:
+                            {
+                                for (var i = 25; i > 1; i--)
+                                {
+                                    for (var j = 1; j < Rows - 1; j++)
+                                    {
+                                        FontManager.DrawCharacter(i == 25 ? '█' : (char)Random.Next(0x80), spriteBatch, font, new Vector2(Cols - i, j),
+                                            (i == 25 ? new ColorPair(ColorManager.DarkGrey, ColorManager.Black) : FontManager.ColorManager.GetPairFromTriad(Random.Next(8), Random.Next(8),
+                                                Random.Next(1))));
+                                    }
+                                }
+                                break;
+                            }
+                            case SidebarState.HALFBAR_WITH_MAP:
+                            {
+
+                                for (var i = 56; i > 1; i--)
+                                {
+                                    for (var j = 1; j < Rows - 1; j++)
+                                    {
+                                        FontManager.DrawCharacter('█', spriteBatch, font, new Vector2(Cols - i, j),
+                                            new ColorPair(i == 56 ? ColorManager.DarkGrey : ColorManager.Black,
+                                                ColorManager.Black));
+                                    }
+                                }
+                                DrawSidebarText();
+                                for (var i = 25; i > 1; i--)
+                                {
+                                    for (var j = 1; j < Rows - 1; j++)
+                                    {
+                                        FontManager.DrawCharacter(i == 25 ? '█' : (char)Random.Next(0x80), spriteBatch, font, new Vector2(Cols - i, j),
+                                            (i == 25 ? new ColorPair(ColorManager.DarkGrey, ColorManager.Black) : FontManager.ColorManager.GetPairFromTriad(Random.Next(8), Random.Next(8),
+                                                Random.Next(1))));
+                                    }
+                                }
+                                break;
+                            }
+                        }
                         break;
                     case FortressState.ANNOUNCEMENTS:
                         AnnouncementManager.RenderAnnouncementList(spriteBatch, font);
@@ -429,6 +576,25 @@ namespace DwarfFortressXNA
             FontManager.DrawString("XNA Beta Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, spriteBatch, font, new Vector2(0, Rows-1), FontManager.ColorManager.GetPairFromTriad(5, 0, 1));
             spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        public void DrawSidebarText()
+        {
+            //This will perform the switching for particular sets of FortressStates
+            //Sidebar text varies :D
+            var baseOffset = (SidebarState == SidebarState.HALFBAR)
+                ? 32
+                : 56;
+            switch (FortressState)
+            {
+                case FortressState.GAME:
+                    FontManager.DrawCharacter('a', spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.LightGreen, ColorManager.Black));
+                    FontManager.DrawString(": View Announcements", spriteBatch, font, new Vector2(Cols - (baseOffset - 3), 2), new ColorPair(ColorManager.LightGrey, ColorManager.Black));
+                    break;
+                case FortressState.BUILDING:
+                    FontManager.DrawString("Motha-fuckin building!", spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.Red, ColorManager.Black));
+                    break;
+            }
         }
     }
 }

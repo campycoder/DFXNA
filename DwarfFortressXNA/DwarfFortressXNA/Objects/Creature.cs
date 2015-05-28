@@ -385,10 +385,6 @@ namespace DwarfFortressXNA.Objects
                 {
                     var name = RawFile.StripTokenEnding(split[1]);
                     var caste = new Caste(name, ReferenceName);
-                    foreach (var t in GlobalCasteTokens)
-                    {
-                        caste.ParseToken(t, this);
-                    }
                     foreach (var materialPair in MaterialList)
                     {
                         caste.MaterialList.Add(materialPair.Key, materialPair.Value);
@@ -396,6 +392,10 @@ namespace DwarfFortressXNA.Objects
                     foreach (var tissuePair in TissueList)
                     {
                         caste.TissueList.Add(tissuePair.Key, tissuePair.Value);
+                    }
+                    foreach (var t in GlobalCasteTokens)
+                    {
+                        caste.ParseToken(t, this);
                     }
                     if (!CasteList.ContainsKey(name)) CasteList.Add(name, caste);
                 }

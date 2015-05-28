@@ -341,26 +341,32 @@ namespace DwarfFortressXNA.Objects
             }
             else if (token.StartsWith("[IT_MATERIAL"))
             {
-                switch (split[1])
+                switch (RawFile.StripTokenEnding(split[1]))
                 {
                     case "FLOW":
+                    {
                         InteractionBreathAttack breathAttack;
                         if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out breathAttack))
                             throw new TokenParseException("InteractionTarget",
                                 "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[2]) + "!");
                         BreathAttack = breathAttack;
                         break;
+                    } 
                     case "MATERIAL":
-                        //TODO: Parse Material token.
+                    {
+                        Material = DwarfFortress.MaterialManager.MaterialSearch(split[1], split[2]);
                         InteractionBreathAttack breathAttackType;
                         if (!Enum.TryParse(RawFile.StripTokenEnding(split[3]), out breathAttackType))
                             throw new TokenParseException("InteractionTarget",
                                 "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[3]) + "!");
                         BreathAttack = breathAttackType;
                         break;
+                    }
                     case "CONTEXT_MATERIAL":
+                    {
                         UseContextMaterial = true;
                         break;
+                    }
                 }
             }
         }

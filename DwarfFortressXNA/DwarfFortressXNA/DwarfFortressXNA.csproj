@@ -97,6 +97,7 @@
     <Compile Include="Managers\FontManager.cs" />
     <Compile Include="Managers\LanguageManager.cs" />
     <Compile Include="Objects\Interaction.cs" />
+    <Compile Include="Objects\InteractionUsage.cs" />
     <Compile Include="Objects\Material.cs" />
     <Compile Include="Managers\MaterialManager.cs" />
     <Compile Include="Objects\Tile.cs" />

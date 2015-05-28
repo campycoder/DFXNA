@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DwarfFortressXNA.Objects;
 
 namespace DwarfFortressXNA.Managers
@@ -48,6 +49,23 @@ namespace DwarfFortressXNA.Managers
                 else currentBuffer.Add(t);
             }
             AddToList(currentBuffer);
+        }
+
+        public Material MaterialSearch(string type, string param, object parent = null)
+        {
+            switch (type)
+            {
+                case "INORGANIC":
+                    if (!InorganicMaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad inorganic material " + param + "!");
+                    return InorganicMaterialList[param];
+                case "LOCAL_CREATURE_MAT":
+                    if (parent == null) throw new Exception("Parent wasn't passed to MaterialSearch on LocalCreatureMat!");
+                    var parentObject = (Creature)parent;
+                    if (!parentObject.MaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad LocalCreature material " + param + "!");
+                    return parentObject.MaterialList[param];
+                default:
+                    return null;
+            }
         }
     }
 }
