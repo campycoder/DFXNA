@@ -41,11 +41,11 @@ namespace DwarfFortressXNA.Objects
 
     public enum MaterialType
     {
+        NULL,
         STONE,
         GEM,
         METAL,
-        GLASS,
-        NULL
+        GLASS    
     }
 
     public enum Environment
@@ -100,6 +100,7 @@ namespace DwarfFortressXNA.Objects
         public char Tile = '█';
         public char ItemSymbol = '•';
         public Dictionary<string, int> IntProperties;
+        public Environment LayerStone;
 
         public Material(string template)
         {
@@ -202,6 +203,13 @@ namespace DwarfFortressXNA.Objects
                 {
                     var finalInt = RawFile.GetIntFromToken(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
                     if (finalInt != 0) IntProperties[tokenList[i].Split(new[] {':'})[0].Replace("[", "")] = finalInt;
+                }
+                else if (tokenList[i].StartsWith("[IGNEOUS") || tokenList[i] == "[METAMORPHIC]" ||
+                         tokenList[i] == "[SEDIMENTARY]")
+                {
+                    Environment env;
+                    if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out env)) throw new TokenParseException("Material", "Bad Environment " + RawFile.StripTokenEnding(tokenList[i].Replace("[", "")) + "!");
+                    LayerStone = env;
                 }
             }
         }

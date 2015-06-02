@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Environment = DwarfFortressXNA.Objects.Environment;
 
 namespace DwarfFortressXNA
 {
@@ -91,7 +92,7 @@ namespace DwarfFortressXNA
         public static int FrameLimit = 100;
         public bool CursorOn = true;
 
-        public Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
+        public static Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
 
         int frames;
         private TimeSpan elapsed;
@@ -156,7 +157,14 @@ namespace DwarfFortressXNA
                     for (var z = 0; z < MapDepth; z++)
                     {
                         var material = Random.Next(20) == 0 ? null : materials[Random.Next(materials.Count)];
-                        MaterialMap[x, y, z] = new Tile(material); 
+                        var random = Random.Next(101);
+                        /*var tile = random <= 25
+                            ? TileType.ROUGH_LAYER_STONE_FLOOR_1
+                            : random <= 50
+                                ? TileType.ROUGH_LAYER_STONE_FLOOR_2
+                                : random <= 75 ? TileType.ROUGH_LAYER_STONE_FLOOR_3 : TileType.ROUGH_LAYER_STONE_FLOOR_4;*/
+                        var tile = TileType.ROUGH_LAYER_STONE_WALL;
+                        MaterialMap[x, y, z] = new Tile(material, (material == null ? TileType.EMPTY : tile), new Vector3(x, y, z));
                     } 
                 }
             }
@@ -199,7 +207,7 @@ namespace DwarfFortressXNA
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             //font = this.Content.Load<Texture2D>("./Data/curses_640x300");
-            font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/curses_640x300.png", FileMode.Open));
+            font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/curses_800x600.png", FileMode.Open));
             FontManager.SetCharSize(font.Width/16,font.Height/16);
             graphics.PreferredBackBufferHeight = (Rows * FontManager.CharSizeY);
             graphics.PreferredBackBufferWidth = (Cols * FontManager.CharSizeX);
@@ -290,7 +298,7 @@ namespace DwarfFortressXNA
                                     for (var z = 0; z < MapDepth; z++)
                                     {
                                         var material = materials[Random.Next(materials.Count)];
-                                        MaterialMap[x, y, z] = new Tile(material);
+                                        MaterialMap[x, y, z] = new Tile(material, material == null ? TileType.EMPTY : material.LayerStone != Environment.ALL_STONE ? TileType.ROUGH_LAYER_STONE_WALL : TileType.ROUGH_MINERAL_WALL, new Vector3(x,y,z)); 
                                         
                                     } 
                                 }
@@ -376,11 +384,20 @@ namespace DwarfFortressXNA
                             arrowDeb = true;
                             CursorMoveTimer = MoveConst;
                         }
-                        if (Keyboard.GetState().IsKeyDown(Keys.A) && !EscDebounce)
+                        if (FortressState == FortressState.GAME && !EscDebounce)
                         {
-                            FortressState = FortressState.ANNOUNCEMENTS;
-                            AnnouncementManager.ClearBuffered();
-                            EscDebounce = true;
+                            if (Keyboard.GetState().IsKeyDown(Keys.A))
+                            {
+                                FortressState = FortressState.ANNOUNCEMENTS;
+                                AnnouncementManager.ClearBuffered();
+                                EscDebounce = true;
+                            }
+                            if (Keyboard.GetState().IsKeyDown(Keys.B))
+                            {
+                                FortressState = FortressState.BUILDING;
+                                AnnouncementManager.ClearBuffered();
+                                EscDebounce = true;
+                            }
                         }
                     }
                     if(FortressState != FortressState.GAME)
@@ -477,7 +494,7 @@ namespace DwarfFortressXNA
                         }
                         switch (SidebarState)
                         {
-                                //WIDTH OF MAPBAR IS ~22 Characters
+                                //WIDTH OF MAPBAR IS ~24 Characters
                             case SidebarState.NONE:
                                 break;
                             case SidebarState.HALFBAR:
@@ -510,15 +527,7 @@ namespace DwarfFortressXNA
                             }
                             case SidebarState.MAP:
                             {
-                                for (var i = 25; i > 1; i--)
-                                {
-                                    for (var j = 1; j < Rows - 1; j++)
-                                    {
-                                        FontManager.DrawCharacter(i == 25 ? '█' : (char)Random.Next(0x80), spriteBatch, font, new Vector2(Cols - i, j),
-                                            (i == 25 ? new ColorPair(ColorManager.DarkGrey, ColorManager.Black) : FontManager.ColorManager.GetPairFromTriad(Random.Next(8), Random.Next(8),
-                                                Random.Next(1))));
-                                    }
-                                }
+                                DrawMap();
                                 break;
                             }
                             case SidebarState.HALFBAR_WITH_MAP:
@@ -534,15 +543,7 @@ namespace DwarfFortressXNA
                                     }
                                 }
                                 DrawSidebarText();
-                                for (var i = 25; i > 1; i--)
-                                {
-                                    for (var j = 1; j < Rows - 1; j++)
-                                    {
-                                        FontManager.DrawCharacter(i == 25 ? '█' : (char)Random.Next(0x80), spriteBatch, font, new Vector2(Cols - i, j),
-                                            (i == 25 ? new ColorPair(ColorManager.DarkGrey, ColorManager.Black) : FontManager.ColorManager.GetPairFromTriad(Random.Next(8), Random.Next(8),
-                                                Random.Next(1))));
-                                    }
-                                }
+                                DrawMap();
                                 break;
                             }
                         }
@@ -590,10 +591,24 @@ namespace DwarfFortressXNA
                 case FortressState.GAME:
                     FontManager.DrawCharacter('a', spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.LightGreen, ColorManager.Black));
                     FontManager.DrawString(": View Announcements", spriteBatch, font, new Vector2(Cols - (baseOffset - 3), 2), new ColorPair(ColorManager.LightGrey, ColorManager.Black));
+                    FontManager.DrawCharacter('b', spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 3), new ColorPair(ColorManager.LightGreen, ColorManager.Black));
+                    FontManager.DrawString(": Building", spriteBatch, font, new Vector2(Cols - (baseOffset - 3), 3), new ColorPair(ColorManager.LightGrey, ColorManager.Black));
                     break;
                 case FortressState.BUILDING:
                     FontManager.DrawString("Motha-fuckin building!", spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.Red, ColorManager.Black));
                     break;
+            }
+        }
+
+        public void DrawMap()
+        {
+            for (var i = 25; i > 1; i--)
+            {
+                for (var j = 1; j < Rows - 1; j++)
+                {
+                    FontManager.DrawCharacter(i == 25 ? '█' : 'Ω', spriteBatch, font, new Vector2(Cols - i, j),
+                        (i == 25 ? new ColorPair(ColorManager.DarkGrey, ColorManager.Black) : new ColorPair(ColorManager.LightGrey, ColorManager.Black)));
+                }
             }
         }
     }
