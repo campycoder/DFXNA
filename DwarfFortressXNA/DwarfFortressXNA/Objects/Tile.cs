@@ -603,7 +603,7 @@ namespace DwarfFortressXNA.Objects
         CONSTRUCTED_RAMP_TRACK_NSW      = 0x02B3,
         CONSTRUCTED_RAMP_TRACK_NEW      = 0x02B4,
         CONSTRUCTED_RAMP_TRACK_SEW      = 0x02B5,
-        CONSTRUCTED_RAMP_TRACK_NSEW     = 0x02B6,
+        CONSTRUCTED_RAMP_TRACK_NSEW     = 0x02B6
     }
     public class Tile
     {
@@ -685,10 +685,10 @@ namespace DwarfFortressXNA.Objects
                     renderChar = '▼';
                     renderColor.Background = ColorManager.Black;
                     renderColor.Foreground = (int) MapPosition.Z < DwarfFortress.MapDepth - 1 &&
-                                             DwarfFortress.MaterialMap[
+                                             DwarfFortress.World.MapTiles[
                                                  (int) MapPosition.X, (int) MapPosition.Y, (int) MapPosition.Z + 1]
                                                  .Material != null
-                        ? DwarfFortress.MaterialMap[(int) MapPosition.X, (int) MapPosition.Y, (int) MapPosition.Z + 1]
+                        ? DwarfFortress.World.MapTiles[(int)MapPosition.X, (int)MapPosition.Y, (int)MapPosition.Z + 1]
                             .Material
                             .DisplayColor.Foreground
                         : ColorManager.DarkGrey;
@@ -888,6 +888,7 @@ namespace DwarfFortressXNA.Objects
                 case TileType.ROUGH_OBSIDIAN_FLOOR_1:
                 case TileType.ROUGH_MAP_FEATURE_FLOOR_1:
                 case TileType.DARK_GRASS_FLOOR_1:
+                case TileType.BRIGHT_GRASS_FLOOR_1:
                 {
                     renderChar = '\'';
                     renderColor.Background = ColorManager.Black;
@@ -897,6 +898,7 @@ namespace DwarfFortressXNA.Objects
                 case TileType.ROUGH_OBSIDIAN_FLOOR_2:
                 case TileType.ROUGH_MAP_FEATURE_FLOOR_2:
                 case TileType.DARK_GRASS_FLOOR_2:
+                case TileType.BRIGHT_GRASS_FLOOR_2:
                 {
                     renderChar = ',';
                     renderColor.Background = ColorManager.Black;
@@ -906,6 +908,7 @@ namespace DwarfFortressXNA.Objects
                 case TileType.ROUGH_OBSIDIAN_FLOOR_3:
                 case TileType.ROUGH_MAP_FEATURE_FLOOR_3:
                 case TileType.DARK_GRASS_FLOOR_3:
+                case TileType.BRIGHT_GRASS_FLOOR_3:
                 {
                     renderChar = '`';
                     renderColor.Background = ColorManager.Black;
@@ -915,6 +918,7 @@ namespace DwarfFortressXNA.Objects
                 case TileType.ROUGH_OBSIDIAN_FLOOR_4:
                 case TileType.ROUGH_MAP_FEATURE_FLOOR_4:
                 case TileType.DARK_GRASS_FLOOR_4:
+                case TileType.BRIGHT_GRASS_FLOOR_4:
                 {
                     renderChar = '.';
                     renderColor.Background = ColorManager.Black;
@@ -923,17 +927,17 @@ namespace DwarfFortressXNA.Objects
                 case TileType.EMPTY:
                 {
                     renderChar = (int) MapPosition.Z < DwarfFortress.MapDepth - 1 &&
-                                 DwarfFortress.MaterialMap[
+                                 DwarfFortress.World.MapTiles[
                                      (int) MapPosition.X, (int) MapPosition.Y, (int) MapPosition.Z + 1]
                                      .Material != null
                         ? '∙'
                         : '▓';
                     renderColor.Background = ColorManager.Black;
                     renderColor.Foreground = (int)MapPosition.Z < DwarfFortress.MapDepth - 1 &&
-                                             DwarfFortress.MaterialMap[
+                                             DwarfFortress.World.MapTiles[
                                                  (int)MapPosition.X, (int)MapPosition.Y, (int)MapPosition.Z + 1]
                                                  .Material != null
-                        ? DwarfFortress.MaterialMap[(int)MapPosition.X, (int)MapPosition.Y, (int)MapPosition.Z + 1]
+                        ? DwarfFortress.World.MapTiles[(int)MapPosition.X, (int)MapPosition.Y, (int)MapPosition.Z + 1]
                             .Material
                             .DisplayColor.Foreground
                         : ColorManager.Cyan;

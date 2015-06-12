@@ -108,6 +108,9 @@
     <Compile Include="Objects\Tissue.cs" />
     <Compile Include="Managers\TissueManager.cs" />
     <Compile Include="Objects\Word.cs" />
+    <Compile Include="World\GenerationModule.cs" />
+    <Compile Include="World\StandardWorldGen.cs" />
+    <Compile Include="World\WorldObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

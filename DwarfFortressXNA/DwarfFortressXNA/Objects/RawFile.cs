@@ -8,7 +8,7 @@ namespace DwarfFortressXNA.Objects
 {
     public class TokenParseException : Exception
     {
-        public TokenParseException(string parserName, string message) :base("Token Parser " + parserName + " threw this exception: " + message)
+        public TokenParseException(string parserName, string message) :base(parserName + " threw an error: " + message)
         {
             
         }

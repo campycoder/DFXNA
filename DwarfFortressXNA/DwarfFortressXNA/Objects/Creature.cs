@@ -374,7 +374,7 @@ namespace DwarfFortressXNA.Objects
                     BiomeToken buffer;
                     if (!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out buffer))
                     {
-                        //throw new TokenParseException("Creature", "Biome token " + tokenList[i] + " incorrect!");
+                        //throw new TokenParseException(referenceName, "Biome token " + tokenList[i] + " incorrect!");
                     }
                     else
                     {
@@ -412,8 +412,17 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[COLOR:"))
                 {
                     var fore = RawFile.GetIntFromToken(split[1]);
+                    if (fore > 7)
+                        throw new TokenParseException(referenceName,
+                            "Bad foreground value " + fore + " - must be >= 0 && <= 7!");
                     var back = RawFile.GetIntFromToken(split[2]);
+                    if (back > 7)
+                        throw new TokenParseException(referenceName,
+                            "Bad background value " + back + " - must be >= 0 && <= 7!");
                     var bright = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
+                    if(bright != 1 && bright != 0)
+                        throw new TokenParseException(referenceName,
+                           "Bad brightness value " + bright + " - must be either 0 or 1!");
                     Color = DwarfFortress.FontManager.ColorManager.GetPairFromTriad(fore, back, bright);
                 }
                 else if (tokenList[i].StartsWith("[CREATURE_CLASS:"))
@@ -435,7 +444,7 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[FREQUENCY:"))
                 {
                     var number = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[1]));
-                    if (number > 100) throw new TokenParseException("Creature", "Bad frequency value " + number + "!");
+                    if (number > 100) throw new TokenParseException(referenceName, "Bad frequency value " + number + "!");
                 }
                 else if (tokenList[i].StartsWith("[GENERAL_BABY_NAME:"))
                 {
@@ -462,24 +471,24 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[SELECT_MATERIAL:"))
                 {
                     var materialName = RawFile.StripTokenEnding(split[1]);
-                    if(!MaterialList.ContainsKey(materialName) && materialName != "ALL") throw new TokenParseException("Creature", "Material " + materialName + " does not exist in creature!");
+                    if(!MaterialList.ContainsKey(materialName) && materialName != "ALL") throw new TokenParseException(referenceName, "Material " + materialName + " does not exist in creature!");
                     CurrentSelectedMaterials.Clear();
                     CurrentSelectedMaterials.Add(materialName);
                 }
                 else if (tokenList[i].StartsWith("[PLUS_MATERIAL"))
                 {
                     var materialName = RawFile.StripTokenEnding(split[1]);
-                    if(materialName == "ALL") throw new TokenParseException("Creature", "PLUS_MATERIAL cannot add ALL!");
-                    if(CurrentSelectedMaterials.Contains("ALL") || CurrentSelectedMaterials.Contains(materialName)) throw new TokenParseException("Creature", "Redundant PLUS_MATERIAL for " + materialName + ": you've already selected either ALL or the token!");
-                    if (!MaterialList.ContainsKey(materialName)) throw new TokenParseException("Creature", "Material " + materialName + " does not exist in creature!");
+                    if(materialName == "ALL") throw new TokenParseException(referenceName, "PLUS_MATERIAL cannot add ALL!");
+                    if(CurrentSelectedMaterials.Contains("ALL") || CurrentSelectedMaterials.Contains(materialName)) throw new TokenParseException(referenceName, "Redundant PLUS_MATERIAL for " + materialName + ": you've already selected either ALL or the token!");
+                    if (!MaterialList.ContainsKey(materialName)) throw new TokenParseException(referenceName, "Material " + materialName + " does not exist in creature!");
                     CurrentSelectedMaterials.Add(materialName);
                 }
                 else if (tokenList[i].StartsWith("[REMOVE_MATERIAL:"))
                 {
                     var materialName = RawFile.StripTokenEnding(split[1]);
-                    if(!MaterialList.ContainsKey(materialName)) throw new TokenParseException("Creature", "Material " + materialName + " does not exist in creature!");
+                    if(!MaterialList.ContainsKey(materialName)) throw new TokenParseException(referenceName, "Material " + materialName + " does not exist in creature!");
                     MaterialList.Remove(materialName);
-                    if(CurrentSelectedMaterials.Contains(materialName)) throw new TokenParseException("Creature", "Bad remove: Material " + materialName + " is still selected!");
+                    if(CurrentSelectedMaterials.Contains(materialName)) throw new TokenParseException(referenceName, "Bad remove: Material " + materialName + " is still selected!");
                 }
                 else if (tokenList[i].StartsWith("[MATERIAL:"))
                 {
@@ -488,24 +497,24 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[SELECT_TISSUE:"))
                 {
                     var tissueName = RawFile.StripTokenEnding(split[1]);
-                    if(!TissueList.ContainsKey(tissueName)) throw new TokenParseException("Creature", "Tissue " + tissueName + " does not exist in creature!");
+                    if(!TissueList.ContainsKey(tissueName)) throw new TokenParseException(referenceName, "Tissue " + tissueName + " does not exist in creature!");
                     CurrentSelectedTissues.Clear();
                     CurrentSelectedTissues.Add(tissueName);
                 }
                 else if (tokenList[i].StartsWith("[PLUS_TISSUE:"))
                 {
                     var tissueName = RawFile.StripTokenEnding(split[1]);
-                    if (tissueName == "ALL") throw new TokenParseException("Creature", "PLUS_TISSUE cannot add ALL!");
-                    if(CurrentSelectedTissues.Contains("ALL") || CurrentSelectedTissues.Contains(tissueName)) throw new TokenParseException("Creature", "Redundant PLUS_TISSUE for " + tissueName + ": you've already selected either ALL or the token!");
-                    if (!TissueList.ContainsKey(tissueName)) throw new TokenParseException("Creature", "Tissue " + tissueName + " does not exist in creature!");
+                    if (tissueName == "ALL") throw new TokenParseException(referenceName, "PLUS_TISSUE cannot add ALL!");
+                    if(CurrentSelectedTissues.Contains("ALL") || CurrentSelectedTissues.Contains(tissueName)) throw new TokenParseException(referenceName, "Redundant PLUS_TISSUE for " + tissueName + ": you've already selected either ALL or the token!");
+                    if (!TissueList.ContainsKey(tissueName)) throw new TokenParseException(referenceName, "Tissue " + tissueName + " does not exist in creature!");
                     CurrentSelectedTissues.Add(tissueName);
                 }
                 else if (tokenList[i].StartsWith("[REMOVE_TISSUE:"))
                 {
                     var tissueName = RawFile.StripTokenEnding(split[1]);
-                    if(!TissueList.ContainsKey(tissueName)) throw new TokenParseException("Creature", "Tissue " + tissueName + " does not exist in creature!");
+                    if(!TissueList.ContainsKey(tissueName)) throw new TokenParseException(referenceName, "Tissue " + tissueName + " does not exist in creature!");
                     TissueList.Remove(tissueName);
-                    if(CurrentSelectedTissues.Contains(tissueName)) throw new TokenParseException("Creature", "Bad remove: Tissue " + tissueName + " is still selected!");
+                    if(CurrentSelectedTissues.Contains(tissueName)) throw new TokenParseException(referenceName, "Bad remove: Tissue " + tissueName + " is still selected!");
                 }
                 else if (tokenList[i].StartsWith("[TISSUE:"))
                 {
@@ -562,7 +571,7 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[SPHERE:"))
                 {
                     Spheres sphereBuffer;
-                    if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out sphereBuffer)) throw new TokenParseException("Creature", "Sphere " + RawFile.StripTokenEnding(split[1]) + " is invalid!");
+                    if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out sphereBuffer)) throw new TokenParseException(referenceName, "Sphere " + RawFile.StripTokenEnding(split[1]) + " is invalid!");
                     SphereList.Add(sphereBuffer);
                 }
                 else if (tokenList[i] == "[UBIQUITOUS]")
@@ -572,35 +581,35 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[UNDERGROUND_DEPTH:"))
                 {
                     UndergroundDepthMin = RawFile.GetIntFromToken(split[1]);
-                    if (UndergroundDepthMin < 0 && UndergroundDepthMin > 5) throw new TokenParseException("Creature","UndergroundDepthMin invalid: " + UndergroundDepthMin + "!");
+                    if (UndergroundDepthMin < 0 && UndergroundDepthMin > 5) throw new TokenParseException(referenceName,"UndergroundDepthMin invalid: " + UndergroundDepthMin + "!");
                     UndergroundDepthMax = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[2]));
-                    if(UndergroundDepthMax < 0 && UndergroundDepthMax > 5) throw new TokenParseException("Creature", "UndergroundDepthMax invalid: " + UndergroundDepthMax + "!");
+                    if(UndergroundDepthMax < 0 && UndergroundDepthMax > 5) throw new TokenParseException(referenceName, "UndergroundDepthMax invalid: " + UndergroundDepthMax + "!");
                 }
                 //TODO: UseTissue,UseTissueTemplate
                 else if (tokenList[i].StartsWith("[USE_MATERIAL:"))
                 {
                     var oldMaterialName = RawFile.StripTokenEnding(split[2]);
-                    if(!MaterialList.ContainsKey(oldMaterialName)) throw new TokenParseException("Creature", "Old material " + oldMaterialName + " does not exist!");
+                    if(!MaterialList.ContainsKey(oldMaterialName)) throw new TokenParseException(referenceName, "Old material " + oldMaterialName + " does not exist!");
                     var newMaterialName = split[1];
-                    if(MaterialList.ContainsKey(newMaterialName)) throw new TokenParseException("Creature", "Material " + newMaterialName + " has already been defined!");
+                    if(MaterialList.ContainsKey(newMaterialName)) throw new TokenParseException(referenceName, "Material " + newMaterialName + " has already been defined!");
                     Material newMaterial = MaterialList[oldMaterialName];
                     MaterialList.Add(newMaterialName, newMaterial);
                 }
                 else if (tokenList[i].StartsWith("[USE_MATERIAL_TEMPLATE:"))
                 {
                     var materialTemplateName = RawFile.StripTokenEnding(split[2]);
-                    if(!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(materialTemplateName)) throw new TokenParseException("Creature", "Material template " + materialTemplateName + " hasn't been defined or parsed!");
+                    if(!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(materialTemplateName)) throw new TokenParseException(referenceName, "Material template " + materialTemplateName + " hasn't been defined or parsed!");
                     var newMaterialName = split[1];
-                    if(MaterialList.ContainsKey(newMaterialName)) throw new TokenParseException("Creature", "Material " + newMaterialName + " has already been defined!");
+                    if(MaterialList.ContainsKey(newMaterialName)) throw new TokenParseException(referenceName, "Material " + newMaterialName + " has already been defined!");
                     Material newMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[materialTemplateName];
                     MaterialList.Add(newMaterialName, newMaterial);
                 }
                 else if (tokenList[i] == "[USE_CASTE:")
                 {
                     var oldCasteName = RawFile.StripTokenEnding(split[2]);
-                    if(!CasteList.ContainsKey(oldCasteName)) throw new TokenParseException("Creature", "Bad old caste name " + oldCasteName + "!");
+                    if(!CasteList.ContainsKey(oldCasteName)) throw new TokenParseException(referenceName, "Bad old caste name " + oldCasteName + "!");
                     var newCasteName = split[1];
-                    if(CasteList.ContainsKey(newCasteName)) throw new TokenParseException("Creature", "Caste " + newCasteName + " already exists!");
+                    if(CasteList.ContainsKey(newCasteName)) throw new TokenParseException(referenceName, "Caste " + newCasteName + " already exists!");
                     var newCaste = CasteList[oldCasteName];
                     CasteList.Add(newCasteName, newCaste);
                     CurrentSelectedCastes.Clear();
@@ -633,14 +642,14 @@ namespace DwarfFortressXNA.Objects
                 else if (tokenList[i].StartsWith("[SELECT_CASTE:"))
                 {
                     CurrentSelectedCastes.Clear();
-                    if(!CasteList.ContainsKey(RawFile.StripTokenEnding(split[1])) && RawFile.StripTokenEnding(split[1]) != "ALL") throw new TokenParseException("Creature", "Bad caste name " + RawFile.StripTokenEnding(split[1]) + "!");
+                    if(!CasteList.ContainsKey(RawFile.StripTokenEnding(split[1])) && RawFile.StripTokenEnding(split[1]) != "ALL") throw new TokenParseException(referenceName, "Bad caste name " + RawFile.StripTokenEnding(split[1]) + "!");
                     CurrentSelectedCastes.Add(RawFile.StripTokenEnding(split[1]));
                 }
                 else if (tokenList[i].StartsWith("[SELECT_ADDITIONAL_CASTE:"))
                 {
-                    if(CurrentSelectedCastes.Count == 0) throw new TokenParseException("Creature","No cast defined for additional operation!");
+                    if(CurrentSelectedCastes.Count == 0) throw new TokenParseException(referenceName,"No cast defined for additional operation!");
                     var name = RawFile.StripTokenEnding(split[1]);
-                    if (!CasteList.ContainsKey(name)) throw new TokenParseException("Creature", "Bad caste name " + RawFile.StripTokenEnding(split[1]) + "!");
+                    if (!CasteList.ContainsKey(name)) throw new TokenParseException(referenceName, "Bad caste name " + RawFile.StripTokenEnding(split[1]) + "!");
                     CurrentSelectedCastes.Add(name);
                 }
                 else if (tokenList[i].StartsWith("[TRIGGERABLE_GROUP:"))

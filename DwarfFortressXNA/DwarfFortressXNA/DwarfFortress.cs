@@ -1,13 +1,13 @@
 ﻿using System.Globalization;
 using DwarfFortressXNA.Managers;
 using DwarfFortressXNA.Objects;
+using DwarfFortressXNA.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Environment = DwarfFortressXNA.Objects.Environment;
 
 namespace DwarfFortressXNA
 {
@@ -26,7 +26,8 @@ namespace DwarfFortressXNA
         MENU,
         WORLDGEN,
         FONTTEST,
-        PLAYING
+        PLAYING,
+        ERROR
     }
 
     public enum FortressState
@@ -92,7 +93,10 @@ namespace DwarfFortressXNA
         public static int FrameLimit = 100;
         public bool CursorOn = true;
 
-        public static Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
+        private List<string> errorList; 
+
+        //public static Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
+        public static WorldObject World;
 
         int frames;
         private TimeSpan elapsed;
@@ -131,25 +135,36 @@ namespace DwarfFortressXNA
             TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 1000/FrameLimit);
             Window.Title = "Dwarf Fortress";
 // ReSharper disable UnusedVariable
-            var rawFile = new RawFile("./Raw/Objects/language_words.txt");
-            var rawFileH = new RawFile("./Raw/Objects/language_HUMAN.txt");
-            var rawFileD = new RawFile("./Raw/Objects/language_DWARF.txt");
-            var rawFileG = new RawFile("./Raw/Objects/language_GOBLIN.txt");
-            var rawFileS = new RawFile("./Raw/Objects/language_SYM.txt");
-            var rawFileMt = new RawFile("./Raw/Objects/material_template_default.txt");
-            var rawFileIg = new RawFile("./Raw/Objects/inorganic_stone_gem.txt");
-            var rawFileIl = new RawFile("./Raw/Objects/inorganic_stone_layer.txt");
-            var rawFileIm = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
-            var rawFileIs = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
-            var rawFileIt = new RawFile("./Raw/Objects/inorganic_metal.txt");
-            var rawFileIn = new RawFile("./Raw/Objects/interaction_standard.txt");
-            var rawFileTt = new RawFile("./Raw/Objects/tissue_template_default.txt");
-            var rawFileBd = new RawFile("./Raw/Objects/body_default.txt");
-            var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");
-            var rawFileBp = new RawFile("./Raw/Objects/b_detail_plan_default.txt");
-            var rawFileSpider = new RawFile("./Raw/Objects/creature_ggcs.txt");
+            try
+            {
+                var rawFile = new RawFile("./Raw/Objects/language_words.txt");
+                var rawFileH = new RawFile("./Raw/Objects/language_HUMAN.txt");
+                var rawFileD = new RawFile("./Raw/Objects/language_DWARF.txt");
+                var rawFileG = new RawFile("./Raw/Objects/language_GOBLIN.txt");
+                var rawFileS = new RawFile("./Raw/Objects/language_SYM.txt");
+                var rawFileMt = new RawFile("./Raw/Objects/material_template_default.txt");
+                var rawFileIg = new RawFile("./Raw/Objects/inorganic_stone_gem.txt");
+                var rawFileIl = new RawFile("./Raw/Objects/inorganic_stone_layer.txt");
+                var rawFileIm = new RawFile("./Raw/Objects/inorganic_stone_mineral.txt");
+                var rawFileIs = new RawFile("./Raw/Objects/inorganic_stone_soil.txt");
+                var rawFileIt = new RawFile("./Raw/Objects/inorganic_metal.txt");
+                var rawFileIn = new RawFile("./Raw/Objects/interaction_standard.txt");
+                var rawFileTt = new RawFile("./Raw/Objects/tissue_template_default.txt");
+                var rawFileBd = new RawFile("./Raw/Objects/body_default.txt");
+                var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");
+                var rawFileBp = new RawFile("./Raw/Objects/b_detail_plan_default.txt");
+                var rawFileSpider = new RawFile("./Raw/Objects/creature_ggcs.txt");
+            }
+            catch (TokenParseException e)
+            {
+                if(errorList == null) errorList = new List<string>();
+                GameState = GameState.ERROR;
+                errorList.Add(e.Message);
+                SoundManager.SoundEnabled = false;
+                SoundManager.StopCurrentSong();
+            }
 // ReSharper restore UnusedVariable
-            var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
+            /*var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
             for (var x = 0; x < MapWidth; x++)
             {
                 for(var y = 0; y < MapHeight;y++)
@@ -162,12 +177,13 @@ namespace DwarfFortressXNA
                             ? TileType.ROUGH_LAYER_STONE_FLOOR_1
                             : random <= 50
                                 ? TileType.ROUGH_LAYER_STONE_FLOOR_2
-                                : random <= 75 ? TileType.ROUGH_LAYER_STONE_FLOOR_3 : TileType.ROUGH_LAYER_STONE_FLOOR_4;*/
+                                : random <= 75 ? TileType.ROUGH_LAYER_STONE_FLOOR_3 : TileType.ROUGH_LAYER_STONE_FLOOR_4;
                         var tile = TileType.ROUGH_LAYER_STONE_WALL;
                         MaterialMap[x, y, z] = new Tile(material, (material == null ? TileType.EMPTY : tile), new Vector3(x, y, z));
                     } 
                 }
-            }
+            }*/
+            World = new WorldObject(MapWidth, MapHeight, MapDepth, SurfaceDepth, new StandardWorldGen());
         }
 
         public void HandleResize(object sender, EventArgs e)
@@ -241,7 +257,6 @@ namespace DwarfFortressXNA
                 frames = 0;
                 refreshRate = 0;
             }
-
             if (GameState != GameState.MENU)
             {
                 if (!BoxLocked)
@@ -290,19 +305,6 @@ namespace DwarfFortressXNA
                         }
                         if (Keyboard.GetState().IsKeyDown(Keys.G) && !Pdebounce)
                         {
-                            var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
-                            for (var x = 0; x < MapWidth; x++)
-                            {
-                                for (var y = 0; y < MapHeight; y++)
-                                {
-                                    for (var z = 0; z < MapDepth; z++)
-                                    {
-                                        var material = materials[Random.Next(materials.Count)];
-                                        MaterialMap[x, y, z] = new Tile(material, material == null ? TileType.EMPTY : material.LayerStone != Environment.ALL_STONE ? TileType.ROUGH_LAYER_STONE_WALL : TileType.ROUGH_MINERAL_WALL, new Vector3(x,y,z)); 
-                                        
-                                    } 
-                                }
-                            }
                             var announcementType = (AnnouncementType) Random.Next(89, 94);
                             AnnouncementManager.AnnouncementEvent(announcementType, new List<string> {"Urist McGenericdwarf"});
                             Pdebounce = true;
@@ -456,6 +458,14 @@ namespace DwarfFortressXNA
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
             refreshRate++;
+            if (GameState == GameState.ERROR)
+            {
+                FontManager.DrawString("One or more errors were encountered when parsing RawFiles:",  spriteBatch, font, new Vector2(0,0), new ColorPair(ColorManager.Red, ColorManager.Black));
+                for (var i = 0; i < (errorList.Count > (Rows - 2) ? (Rows - 2) : errorList.Count); i++)
+                {
+                    FontManager.DrawString(errorList[i], spriteBatch, font, new Vector2(0,i+1), new ColorPair(ColorManager.LightRed, ColorManager.Black));
+                }
+            }
             if(GameState == GameState.PLAYING)
             {
                 for (var i = 0; i < Cols; i++)
@@ -476,12 +486,12 @@ namespace DwarfFortressXNA
                             {
                                 if (x < MapWidth && y < MapHeight)
                                 {
-                                    MaterialMap[x - 1, y - 1,SelectedZ].RenderTile(spriteBatch, font, new Vector2(x, y));
+                                    World.MapTiles[x - 1, y - 1,SelectedZ].RenderTile(spriteBatch, font, new Vector2(x, y));
                                 }
                             }
                         }
                         if (CursorOn) FontManager.DrawCharacter('X', spriteBatch, font, new Vector2(CursorX, CursorY), FontManager.ColorManager.GetPairFromTriad(6, 0, 1));
-                        FontManager.DrawString(MaterialMap[CursorX-1,CursorY-1,SelectedZ].GetNameBasedOnState(false, true), spriteBatch, font, new Vector2(Cols/5,0), FontManager.ColorManager.GetPairFromTriad(0,7,0));
+                        FontManager.DrawString(World.MapTiles[CursorX-1,CursorY-1,SelectedZ].GetNameBasedOnState(false, true), spriteBatch, font, new Vector2(Cols/5,0), FontManager.ColorManager.GetPairFromTriad(0,7,0));
                         AnnouncementManager.Render(spriteBatch, font);
                         if (Paused) FontManager.DrawString("*PAUSED*", spriteBatch, font, new Vector2(1, 0), FontManager.ColorManager.GetPairFromTriad(3, 2, 1));
                         var adjustedDepth = SurfaceDepth - SelectedZ;

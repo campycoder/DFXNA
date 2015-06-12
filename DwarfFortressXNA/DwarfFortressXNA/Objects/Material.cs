@@ -50,6 +50,7 @@ namespace DwarfFortressXNA.Objects
 
     public enum Environment
     {
+        NULL,
         ALL_STONE,
         IGNEOUS_ALL,
         IGNEOUS_INTRUSIVE,
@@ -76,8 +77,6 @@ namespace DwarfFortressXNA.Objects
         public string Adj;
         public string Plural;
         public string ColorDescriptor;
-        public Dictionary<Environment, Dictionary<InclusionType, int>> Environment;
-        public Dictionary<string, Dictionary<InclusionType, int>> EnvironmentSpec;
         public StateDescription()
         {
 
@@ -100,7 +99,9 @@ namespace DwarfFortressXNA.Objects
         public char Tile = '█';
         public char ItemSymbol = '•';
         public Dictionary<string, int> IntProperties;
-        public Environment LayerStone;
+        public Environment Environment;
+        public Dictionary<Environment, Dictionary<InclusionType, int>> EnvironmentInclusions;
+        public Dictionary<string, Dictionary<InclusionType, int>> EnvironmentSpecInclusions;
 
         public Material(string template)
         {
@@ -114,6 +115,8 @@ namespace DwarfFortressXNA.Objects
         {
             StateList = new Dictionary<State, StateDescription>();
             IntProperties = new Dictionary<string, int>();
+            EnvironmentInclusions = new Dictionary<Environment, Dictionary<InclusionType, int>>();
+            EnvironmentSpecInclusions = new Dictionary<string, Dictionary<InclusionType, int>>();
             CanBeMade = new List<ItemType>();
             InitDefaults();
             for(var i =0;i < tokenList.Count;i++)
@@ -130,6 +133,7 @@ namespace DwarfFortressXNA.Objects
                     tokenList.Remove(tokenList[i]);
                     tokenList.InsertRange(i, multiple);
                 }
+                var split = tokenList[i].Split(new[] {':'});
                 if(tokenList[i].StartsWith("[USE_MATERIAL_TEMPLATE"))
                 {
                     CopyFromTemplate(RawFile.StripTokenEnding(tokenList[i].Split(new[] { ':' })[1]));
@@ -196,8 +200,18 @@ namespace DwarfFortressXNA.Objects
                 {
                     var item = RawFile.StripTokenEnding(tokenList[i].Replace("[ITEMS_", ""));
                     ItemType itemType;
-                    if (!Enum.TryParse(item, out itemType)) throw new TokenParseException("Material", "Bad ItemType " + Type + "!");
+                    if (!Enum.TryParse(item, out itemType)) throw new TokenParseException("Material", "Bad ItemType " + item + "!");
                     CanBeMade.Add(itemType);
+                }
+                else if (tokenList[i].StartsWith("[ENVIRONMENT:"))
+                {
+                    Environment environment;
+                    if(!Enum.TryParse(split[1], out environment)) throw new TokenParseException("Material", "Bad Environment " + split[1] + "!");
+                    InclusionType inclusion;
+                    if (!Enum.TryParse(split[2], out inclusion)) throw new TokenParseException("Material", "Bad InclusionType " + split[2] + "!");
+                    int frequency = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
+                    if(!EnvironmentInclusions.ContainsKey(environment)) EnvironmentInclusions.Add(environment, new Dictionary<InclusionType, int>());
+                    EnvironmentInclusions[environment].Add(inclusion, frequency);
                 }
                 else if(IntProperties.ContainsKey(tokenList[i].Split(new[] {':'})[0].Replace("[","")))
                 {
@@ -205,11 +219,12 @@ namespace DwarfFortressXNA.Objects
                     if (finalInt != 0) IntProperties[tokenList[i].Split(new[] {':'})[0].Replace("[", "")] = finalInt;
                 }
                 else if (tokenList[i].StartsWith("[IGNEOUS") || tokenList[i] == "[METAMORPHIC]" ||
-                         tokenList[i] == "[SEDIMENTARY]")
+                         tokenList[i] == "[SEDIMENTARY]" || tokenList[i].StartsWith("[SOIL"))
                 {
+                    //TODO: Fix this parsing - completely broken in a lot of ways.
                     Environment env;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out env)) throw new TokenParseException("Material", "Bad Environment " + RawFile.StripTokenEnding(tokenList[i].Replace("[", "")) + "!");
-                    LayerStone = env;
+                    Environment = env;
                 }
             }
         }
