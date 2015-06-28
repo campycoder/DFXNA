@@ -141,7 +141,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_COLOR"))
                 {
                     State state;
-                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
+                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) DwarfFortress.ThrowError("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
                     var color = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].ColorDescriptor = color;
@@ -149,7 +149,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_NAME"))
                 {
                     State state;
-                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
+                    if(!Enum.TryParse(tokenList[i].Split(new[] {':'})[1], out state)) DwarfFortress.ThrowError("Material", "Bad state name " + tokenList[i].Split(new[] {':'})[1] + "!");
                     var name = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].Name = name;
@@ -157,7 +157,7 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[STATE_ADJ"))
                 {
                     State state;
-                    if (!Enum.TryParse(tokenList[i].Split(new[] { ':' })[1], out state)) throw new TokenParseException("Material", "Bad state name " + tokenList[i].Split(new[] { ':' })[1] + "!");
+                    if (!Enum.TryParse(tokenList[i].Split(new[] { ':' })[1], out state)) DwarfFortress.ThrowError("Material", "Bad state name " + tokenList[i].Split(new[] { ':' })[1] + "!");
                     var adj = RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[2]);
                     if(!StateList.ContainsKey(state)) StateList.Add(state, new StateDescription());
                     StateList[state].Adj = adj;
@@ -168,7 +168,7 @@ namespace DwarfFortressXNA.Objects
                     var fg = Convert.ToInt32(colorSplit[1]);
                     var bg = Convert.ToInt32(colorSplit[2]);
                     var bt = Convert.ToInt32(RawFile.StripTokenEnding(colorSplit[3]));
-                    if ((fg < 0 || fg > 7) || (bg < 0 || bg > 7) || (bt < 0 || bt > 1)) throw new TokenParseException("Material", "Bad color specification with " + tokenList[i] + "!");
+                    if ((fg < 0 || fg > 7) || (bg < 0 || bg > 7) || (bt < 0 || bt > 1)) DwarfFortress.ThrowError("Material", "Bad color specification with " + tokenList[i] + "!");
                     DisplayColor = DwarfFortress.FontManager.ColorManager.GetPairFromTriad(fg, bg, bt);
                 }
                 else if(tokenList[i].StartsWith("[TILE"))
@@ -194,21 +194,21 @@ namespace DwarfFortressXNA.Objects
                 else if(tokenList[i].StartsWith("[IS_"))
                 {
                     var type = RawFile.StripTokenEnding(tokenList[i].Replace("[IS_", ""));
-                    if (!Enum.TryParse(type, out Type)) throw new TokenParseException("Material", "Bad MaterialType " + type + "!");
+                    if (!Enum.TryParse(type, out Type)) DwarfFortress.ThrowError("Material", "Bad MaterialType " + type + "!");
                 }
                 else if(tokenList[i].StartsWith("[ITEMS_"))
                 {
                     var item = RawFile.StripTokenEnding(tokenList[i].Replace("[ITEMS_", ""));
                     ItemType itemType;
-                    if (!Enum.TryParse(item, out itemType)) throw new TokenParseException("Material", "Bad ItemType " + item + "!");
+                    if (!Enum.TryParse(item, out itemType)) DwarfFortress.ThrowError("Material", "Bad ItemType " + item + "!");
                     CanBeMade.Add(itemType);
                 }
                 else if (tokenList[i].StartsWith("[ENVIRONMENT:"))
                 {
                     Environment environment;
-                    if(!Enum.TryParse(split[1], out environment)) throw new TokenParseException("Material", "Bad Environment " + split[1] + "!");
+                    if(!Enum.TryParse(split[1], out environment)) DwarfFortress.ThrowError("Material", "Bad Environment " + split[1] + "!");
                     InclusionType inclusion;
-                    if (!Enum.TryParse(split[2], out inclusion)) throw new TokenParseException("Material", "Bad InclusionType " + split[2] + "!");
+                    if (!Enum.TryParse(split[2], out inclusion)) DwarfFortress.ThrowError("Material", "Bad InclusionType " + split[2] + "!");
                     int frequency = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
                     if(!EnvironmentInclusions.ContainsKey(environment)) EnvironmentInclusions.Add(environment, new Dictionary<InclusionType, int>());
                     EnvironmentInclusions[environment].Add(inclusion, frequency);
@@ -223,7 +223,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     //TODO: Fix this parsing - completely broken in a lot of ways.
                     Environment env;
-                    if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out env)) throw new TokenParseException("Material", "Bad Environment " + RawFile.StripTokenEnding(tokenList[i].Replace("[", "")) + "!");
+                    if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Replace("[", "")), out env)) DwarfFortress.ThrowError("Material", "Bad Environment " + RawFile.StripTokenEnding(tokenList[i].Replace("[", "")) + "!");
                     Environment = env;
                 }
             }
@@ -286,7 +286,7 @@ namespace DwarfFortressXNA.Objects
 
         public void CopyFromTemplate(string template)
         {
-            if (!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(template)) throw new TokenParseException("Material", "Bad material template requested: " + template);
+            if (!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(template)) DwarfFortress.ThrowError("Material", "Bad material template requested: " + template);
             var tempMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[template];
             foreach(var pair in tempMaterial.StateList)
             {

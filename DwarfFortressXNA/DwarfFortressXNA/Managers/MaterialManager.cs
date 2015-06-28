@@ -58,12 +58,12 @@ namespace DwarfFortressXNA.Managers
             switch (type)
             {
                 case "INORGANIC":
-                    if (!InorganicMaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad inorganic material " + param + "!");
+                    if (!InorganicMaterialList.ContainsKey(param)) DwarfFortress.ThrowError("Caste", "Bad inorganic material " + param + "!");
                     return InorganicMaterialList[param];
                 case "LOCAL_CREATURE_MAT":
                     if (parent == null) throw new Exception("Parent wasn't passed to MaterialSearch on LocalCreatureMat!");
                     var parentObject = (Creature)parent;
-                    if (!parentObject.MaterialList.ContainsKey(param)) throw new TokenParseException("Caste", "Bad LocalCreature material " + param + "!");
+                    if (!parentObject.MaterialList.ContainsKey(param)) DwarfFortress.ThrowError("Caste", "Bad LocalCreature material " + param + "!");
                     return parentObject.MaterialList[param];
                 default:
                     return null;
@@ -73,7 +73,6 @@ namespace DwarfFortressXNA.Managers
         public Material PullRandomIngoranicMaterial(Environment environment)
         {
             var finalList = InorganicMaterialList.Values.Where(mat => mat.Environment == environment).ToList();
-            //if(finalList.Count <= 0) throw new Exception("No inorganic material with environment " + environment + "!");
             if (finalList.Count <= 0) return null;
             var random = DwarfFortress.Random.Next(finalList.Count);
             return finalList[random];
@@ -82,7 +81,6 @@ namespace DwarfFortressXNA.Managers
         public Material  PullInorganicByInclusionEnvironment(Environment environment)
         {
             var finalList = InorganicMaterialList.Values.Where(material => material.EnvironmentInclusions.ContainsKey(environment)).ToList();
-            //if(finalList.Count <= 0) throw new Exception("No inorganic material with the request inclusion environment " + environment + "!");
             if (finalList.Count <= 0) return null;
             var random = DwarfFortress.Random.Next(finalList.Count);
             return finalList[random];

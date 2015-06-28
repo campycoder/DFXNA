@@ -69,7 +69,7 @@ namespace DwarfFortressXNA.Objects
                     {
                         InteractionUsageTargetType targetType;
                         if (!Enum.TryParse(RawFile.StripTokenEnding(split[i]), out targetType))
-                            throw new TokenParseException("InteractionUsage",
+                            DwarfFortress.ThrowError("InteractionUsage",
                                 "Bad InteractionUsageTargetType " + RawFile.StripTokenEnding(split[i]) + "!");
                         targetTypes.Add(targetType);
                     }
@@ -87,7 +87,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionEffectLocation hint;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out hint))
-                        throw new TokenParseException("InteractionUsage",
+                        DwarfFortress.ThrowError("InteractionUsage",
                             "Bad InteractionEffectLocationHint " + RawFile.StripTokenEnding(split[2]) + "!");
                     LocationHint = hint;
                     break;
@@ -96,7 +96,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionUsageHint hint;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out hint))
-                        throw new TokenParseException("InteractionUsage",
+                        DwarfFortress.ThrowError("InteractionUsage",
                             "Bad InteractionUsageHint " + RawFile.StripTokenEnding(split[2]) + "!");
                     UsageHint = hint;
                     break;
@@ -157,7 +157,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionBreathAttack breath;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out breath))
-                        throw new TokenParseException("InteractionUsage",
+                        DwarfFortress.ThrowError("InteractionUsage",
                             "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[2]) + "!");
                     BreathAttack = breath;
                     break;
@@ -167,7 +167,7 @@ namespace DwarfFortressXNA.Objects
                     BreathMaterial = split[2] == "INORGANIC" ? DwarfFortress.MaterialManager.MaterialSearch(split[2], split[3]) : ParentMaterialList[split[3]];
                     InteractionBreathAttack breath;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(split[4]), out breath))
-                        throw new TokenParseException("InteractionUsage",
+                        DwarfFortress.ThrowError("InteractionUsage",
                             "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[4]) + "!");
                     BreathAttack = breath;
                     break;

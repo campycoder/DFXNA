@@ -98,13 +98,13 @@ namespace DwarfFortressXNA.Objects
                 var category = split[3];
                 var param = RawFile.StripTokenEnding(split[4]);
                 var parts = BodyPartSearch(category, param);
-                if(parts.Count == 0) throw new TokenParseException("Catse","Bad search: Category - " + category + " Token - " + param + ".");
+                if(parts.Count == 0) DwarfFortress.ThrowError("Catse","Bad search: Category - " + category + " Token - " + param + ".");
                 AttackList.Add(name, new Attack(name, parts));
                     
             }
             else if (token.StartsWith("[ATTACK_TRIGGER:"))
             {
-                if(!CasteFlagList.Contains(CasteFlags.MEGABEAST)) throw new TokenParseException("Caste","Attack trigger was called without a [MEGABEAST] tag!");
+                if(!CasteFlagList.Contains(CasteFlags.MEGABEAST)) DwarfFortress.ThrowError("Caste","Attack trigger was called without a [MEGABEAST] tag!");
                 AttackPop = RawFile.GetIntFromToken(split[1]);
                 AttackEWealth = RawFile.GetIntFromToken(split[2]);
                 AttackCWealth = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
@@ -124,7 +124,7 @@ namespace DwarfFortressXNA.Objects
             }
             else if (token.StartsWith("[BIOME:"))
             {
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out Biome)) throw new TokenParseException("Caste", "Invalid biome token " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out Biome)) DwarfFortress.ThrowError("Caste", "Invalid biome token " + RawFile.StripTokenEnding(split[1]) + "!");
             }
             else if (token.StartsWith("[BLOOD:"))
             {
@@ -135,16 +135,16 @@ namespace DwarfFortressXNA.Objects
                     BloodMaterial = DwarfFortress.MaterialManager.MaterialSearch(split[1], split[2], parent);
                     statePos++;
                 }
-                if (!Enum.TryParse(RawFile.StripTokenEnding(split[statePos]), out BloodState)) throw new TokenParseException("Caste", "Bad material state" + RawFile.StripTokenEnding(split[statePos]) + "!");
+                if (!Enum.TryParse(RawFile.StripTokenEnding(split[statePos]), out BloodState)) DwarfFortress.ThrowError("Caste", "Bad material state" + RawFile.StripTokenEnding(split[statePos]) + "!");
             }
             else if (token.StartsWith("[BODY:"))
             {
                 foreach (var finalToken in from iToken in split where iToken != "[BODY" select iToken.Contains("]") ? RawFile.StripTokenEnding(iToken) : iToken)
                 {
-                    if(!DwarfFortress.BodyManager.BodyTemplateList.ContainsKey(finalToken)) throw new TokenParseException("Caste", "Body template " + finalToken + " hasn't been loaded yet or doesn't exist!");
+                    if(!DwarfFortress.BodyManager.BodyTemplateList.ContainsKey(finalToken)) DwarfFortress.ThrowError("Caste", "Body template " + finalToken + " hasn't been loaded yet or doesn't exist!");
                     foreach (var pair in DwarfFortress.BodyManager.BodyTemplateList[finalToken].BodyPartList)
                     {
-                        if(BodyPartList.ContainsKey(pair.Key)) throw new TokenParseException("Caste","Body part " + pair.Key + " has already been added to caste!");
+                        if(BodyPartList.ContainsKey(pair.Key)) DwarfFortress.ThrowError("Caste","Body part " + pair.Key + " has already been added to caste!");
                         BodyPartList.Add(pair.Key, pair.Value);
                     }
                 }
@@ -171,16 +171,16 @@ namespace DwarfFortressXNA.Objects
             else if (token.StartsWith("[BODY_DETAIL_PLAN:"))
             {
                 var planName = RawFile.StripTokenEnding(split[1]);
-                if (!DwarfFortress.BodyManager.BodyDetailPlanList.ContainsKey(planName)) throw new TokenParseException("Caste", "Body detail plan " + planName + " isn't defined or hasn't been parsed!");
+                if (!DwarfFortress.BodyManager.BodyDetailPlanList.ContainsKey(planName)) DwarfFortress.ThrowError("Caste", "Body detail plan " + planName + " isn't defined or hasn't been parsed!");
                 BodyDetailPlan plan = DwarfFortress.BodyManager.BodyDetailPlanList[planName];
                 foreach (var material in plan.MaterialList)
                 {
-                    if (!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(material.Value)) throw new TokenParseException("Caste", "Material template " + material.Value + " does not exist!");
+                    if (!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(material.Value)) DwarfFortress.ThrowError("Caste", "Material template " + material.Value + " does not exist!");
                     MaterialList.Add(material.Key, DwarfFortress.MaterialManager.MaterialTemplateList[material.Value]);
                 }
                 foreach (var tissue in plan.TissueList)
                 {
-                    if (!DwarfFortress.TissueManager.TissueTemplateList.ContainsKey(tissue.Value)) throw new TokenParseException("Caste", "Tissue template " + tissue.Value + " does not exist!");
+                    if (!DwarfFortress.TissueManager.TissueTemplateList.ContainsKey(tissue.Value)) DwarfFortress.ThrowError("Caste", "Tissue template " + tissue.Value + " does not exist!");
                     TissueList.Add(tissue.Key, DwarfFortress.TissueManager.TissueTemplateList[tissue.Value]);
                 }
             }
@@ -194,7 +194,7 @@ namespace DwarfFortressXNA.Objects
             else if (token.StartsWith("[BODYGLOSS:"))
             {
                 var glossName = RawFile.StripTokenEnding(split[1]);
-                if(!DwarfFortress.BodyManager.BodyGlossList.ContainsKey(glossName)) throw new TokenParseException("Caste","Bad BodyGloss " + glossName + "!");
+                if(!DwarfFortress.BodyManager.BodyGlossList.ContainsKey(glossName)) DwarfFortress.ThrowError("Caste","Bad BodyGloss " + glossName + "!");
                 var gloss = DwarfFortress.BodyManager.BodyGlossList[glossName];
                 foreach (var bodyPart in BodyPartList.Keys)
                 {
@@ -234,7 +234,7 @@ namespace DwarfFortressXNA.Objects
             else if (token.StartsWith("[CAN_DO_INTERACTION:"))
             {
                 var interactionName = RawFile.StripTokenEnding(split[1]);
-                if(!DwarfFortress.InteractionManager.InteractionList.ContainsKey(interactionName)) throw new TokenParseException("Caste", "Interaction " + interactionName + " doesn't exist or hasn't been loaded!");
+                if(!DwarfFortress.InteractionManager.InteractionList.ContainsKey(interactionName)) DwarfFortress.ThrowError("Caste", "Interaction " + interactionName + " doesn't exist or hasn't been loaded!");
                 InteractionUsageList.Add(interactionName, new InteractionUsage(MaterialList));
                 SelectedInteractionUsage = interactionName;
             }
@@ -255,11 +255,11 @@ namespace DwarfFortressXNA.Objects
             else if (token.StartsWith("[CASTE_COLOR:"))
             {
                 var fore = RawFile.GetIntFromToken(split[1]);
-                if (fore > 7 || fore < 0) throw new TokenParseException("Caste", "CASTE_COLOR component foreground invalid (Higher than seven or lower than zero): " + fore + "!");
+                if (fore > 7 || fore < 0) DwarfFortress.ThrowError("Caste", "CASTE_COLOR component foreground invalid (Higher than seven or lower than zero): " + fore + "!");
                 var back = RawFile.GetIntFromToken(split[2]);
-                if (back > 7 || back < 0) throw new TokenParseException("Caste", "CASTE_COLOR component background invalid (Higher than seven or lower than zero): " + back + "!");
+                if (back > 7 || back < 0) DwarfFortress.ThrowError("Caste", "CASTE_COLOR component background invalid (Higher than seven or lower than zero): " + back + "!");
                 var bright = RawFile.GetIntFromToken(RawFile.StripTokenEnding(split[3]));
-                if(bright != 0 && bright != 1) throw new TokenParseException("Caste", "CASTE_COLOR component brightness invalid (Not one or zero): " + bright + "!");
+                if(bright != 0 && bright != 1) DwarfFortress.ThrowError("Caste", "CASTE_COLOR component brightness invalid (Not one or zero): " + bright + "!");
                 Color = DwarfFortress.FontManager.ColorManager.GetPairFromTriad(fore, back, bright);
             }
             else
@@ -282,7 +282,7 @@ namespace DwarfFortressXNA.Objects
                     break;
                 case "BY_TYPE":
                     BodyPartProperties property;
-                    if(!Enum.TryParse(param, out property)) throw new TokenParseException("Caste", "Bad BodyPartProperty " + param + "!");
+                    if(!Enum.TryParse(param, out property)) DwarfFortress.ThrowError("Caste", "Bad BodyPartProperty " + param + "!");
                     bodyPartReturn.AddRange(from pair in BodyPartList where pair.Value.BodyPartProprtiesList.Contains(property) select pair.Key);
                     break;
                 case "BY_TOKEN":

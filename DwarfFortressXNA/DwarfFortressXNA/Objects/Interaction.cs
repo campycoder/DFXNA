@@ -226,40 +226,40 @@ namespace DwarfFortressXNA.Objects
                 Name = RawFile.StripTokenEnding(split[1]);
             else if (token.StartsWith("[IS_REGION:"))
             {
-                if(Type != InteractionSourceType.REGION) throw new TokenParseException("InteractionSource", "IS_REGION can't be parsed in a " + Type + "InteractionSource!");
+                if(Type != InteractionSourceType.REGION) DwarfFortress.ThrowError("InteractionSource", "IS_REGION can't be parsed in a " + Type + "InteractionSource!");
                 InteractionRegion region;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out region)) throw new TokenParseException("InteractionSource", "Bad InteractionRegion " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out region)) DwarfFortress.ThrowError("InteractionSource", "Bad InteractionRegion " + RawFile.StripTokenEnding(split[1]) + "!");
                 RegionList.Add(region);
             }
             else if(token.StartsWith("[IS_SPHERE:"))
             {
-                if(Type != InteractionSourceType.SECRET) throw new TokenParseException("InteractionSource", "IS_SPHERE can't be parsed in a " + Type + " InteractionSource!");
+                if(Type != InteractionSourceType.SECRET) DwarfFortress.ThrowError("InteractionSource", "IS_SPHERE can't be parsed in a " + Type + " InteractionSource!");
                 Spheres sphere;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out sphere)) throw new TokenParseException("InteractionSource", "Bad Sphere " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out sphere)) DwarfFortress.ThrowError("InteractionSource", "Bad Sphere " + RawFile.StripTokenEnding(split[1]) + "!");
                 SecretSphere = sphere;
             }
             else if (token.StartsWith("[IS_SECRET_GOAL:"))
             {
-                if (Type != InteractionSourceType.SECRET) throw new TokenParseException("InteractionSource", "IS_SECRET_GOAL can't be parsed in a " + Type + " InteractionSource!");
+                if (Type != InteractionSourceType.SECRET) DwarfFortress.ThrowError("InteractionSource", "IS_SECRET_GOAL can't be parsed in a " + Type + " InteractionSource!");
                 InteractionSecretGoal goal;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out goal)) throw new TokenParseException("InteractionSource", "Bad InteractionSecretGoal " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out goal)) DwarfFortress.ThrowError("InteractionSource", "Bad InteractionSecretGoal " + RawFile.StripTokenEnding(split[1]) + "!");
                 SecretGoal = goal;
             }
             else if (token.StartsWith("[IS_SECRET:"))
             {
-                if (Type != InteractionSourceType.SECRET) throw new TokenParseException("InteractionSource", "IS_SECRET can't be parsed in a " + Type + " InteractionSource!");
+                if (Type != InteractionSourceType.SECRET) DwarfFortress.ThrowError("InteractionSource", "IS_SECRET can't be parsed in a " + Type + " InteractionSource!");
                 InteractionSecretMethod method;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out method)) throw new TokenParseException("InteractionSource", "Bad InteractionSecretMethod " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out method)) DwarfFortress.ThrowError("InteractionSource", "Bad InteractionSecretMethod " + RawFile.StripTokenEnding(split[1]) + "!");
                 SecretMethod = method;
             }
             else if (token.StartsWith("[IS_USAGE_HINT:"))
             {
-                if (Type != InteractionSourceType.DEITY) throw new TokenParseException("InteractionSource", "IS_USAGE_HINT can't be parsed in a " + Type + " InteractionSource!");
+                if (Type != InteractionSourceType.DEITY) DwarfFortress.ThrowError("InteractionSource", "IS_USAGE_HINT can't be parsed in a " + Type + " InteractionSource!");
                 InteractionUsageHint hint;
-                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out hint)) throw new TokenParseException("InteractionSource", "Bad InteractionUsageHint " + RawFile.StripTokenEnding(split[1]) + "!");
+                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out hint)) DwarfFortress.ThrowError("InteractionSource", "Bad InteractionUsageHint " + RawFile.StripTokenEnding(split[1]) + "!");
                 DeityUsageHint = hint;
             }
-            else throw new TokenParseException("InteractionSource", "Bad token " + split[1].Remove(0,1));
+            else DwarfFortress.ThrowError("InteractionSource", "Bad token " + split[1].Remove(0,1));
         }
     }
 
@@ -291,7 +291,7 @@ namespace DwarfFortressXNA.Objects
             if (token.StartsWith("[IT_LOCATION:"))
             {
                 InteractionTargetLocation location;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out location)) throw new TokenParseException("InteractionTarget", "Bad InteractionTargetLocation " + RawFile.StripTokenEnding(split[1]));
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out location)) DwarfFortress.ThrowError("InteractionTarget", "Bad InteractionTargetLocation " + RawFile.StripTokenEnding(split[1]));
                 Location = location;
             }
             else if (token.StartsWith("[IT_MANUAL_INPUT:"))
@@ -300,34 +300,34 @@ namespace DwarfFortressXNA.Objects
             }
             else if (token.StartsWith("[IT_AFFECTED_CREATURE:"))
             {
-                if(Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) throw new TokenParseException("InteractionTarget", "IT_AFFECTED_CREATURE can't be parsed in a " + Type + " InteractionTarget!");
+                if(Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) DwarfFortress.ThrowError("InteractionTarget", "IT_AFFECTED_CREATURE can't be parsed in a " + Type + " InteractionTarget!");
                 AffectedCreature = new Tuple<string, string>(split[1], RawFile.StripTokenEnding(split[2]));
             }
             else if (token.StartsWith("[IT_AFFECTED_CLASS:"))
             {
-                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) throw new TokenParseException("InteractionTarget", "IT_AFFECTED_CLASS can't be parsed in a " + Type + " InteractionTarget!");
+                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) DwarfFortress.ThrowError("InteractionTarget", "IT_AFFECTED_CLASS can't be parsed in a " + Type + " InteractionTarget!");
                 AffectedClass = RawFile.StripTokenEnding(split[1]);
             }
             else if (token.StartsWith("[IT_IMMUNE_CREATURE:"))
             {
-                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) throw new TokenParseException("InteractionTarget", "IT_IMMUNE_CREATURE can't be parsed in a " + Type + " InteractionTarget!");
+                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) DwarfFortress.ThrowError("InteractionTarget", "IT_IMMUNE_CREATURE can't be parsed in a " + Type + " InteractionTarget!");
                 ImmuneCreature = new Tuple<string, string>(split[1], RawFile.StripTokenEnding(split[2]));
             }
             else if (token.StartsWith("[IT_IMMUNE_CLASS:"))
             {
-                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) throw new TokenParseException("InteractionTarget", "IT_IMMUNE_CLASS can't be parsed in a " + Type + " InteractionTarget!");
+                if (Type != InteractionTargetType.CREATURE && Type != InteractionTargetType.CORPSE) DwarfFortress.ThrowError("InteractionTarget", "IT_IMMUNE_CLASS can't be parsed in a " + Type + " InteractionTarget!");
                 ImmuneClass = RawFile.StripTokenEnding(split[1]);
             }
             else if (token.StartsWith("[IT_REQUIRES:"))
             {
                 InteractionCreatureRequirement requirement;
-                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out requirement)) throw new TokenParseException("InteractionTarget", "Bad InteractionCreatureRequirement " + RawFile.StripTokenEnding(split[1]) + "!");
+                if(!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out requirement)) DwarfFortress.ThrowError("InteractionTarget", "Bad InteractionCreatureRequirement " + RawFile.StripTokenEnding(split[1]) + "!");
                 CreatureRequirement = requirement;
             }
             else if (token.StartsWith("[IT_FORBIDDEN:"))
             {
                 InteractionCreatureRequirement forbidden;
-                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out forbidden)) throw new TokenParseException("InteractionTarget", "Bad InteractionCreatureRequirement " + RawFile.StripTokenEnding(split[1]) + "!");
+                if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out forbidden)) DwarfFortress.ThrowError("InteractionTarget", "Bad InteractionCreatureRequirement " + RawFile.StripTokenEnding(split[1]) + "!");
                 CreatureForbidden = forbidden;
             }
             else if (token == "[IT_CANNOT_TARGET_IF_ALREADY_AFFECTED]")
@@ -347,7 +347,7 @@ namespace DwarfFortressXNA.Objects
                     {
                         InteractionBreathAttack breathAttack;
                         if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out breathAttack))
-                            throw new TokenParseException("InteractionTarget",
+                            DwarfFortress.ThrowError("InteractionTarget",
                                 "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[2]) + "!");
                         BreathAttack = breathAttack;
                         break;
@@ -357,7 +357,7 @@ namespace DwarfFortressXNA.Objects
                         Material = DwarfFortress.MaterialManager.MaterialSearch(split[1], split[2]);
                         InteractionBreathAttack breathAttackType;
                         if (!Enum.TryParse(RawFile.StripTokenEnding(split[3]), out breathAttackType))
-                            throw new TokenParseException("InteractionTarget",
+                            DwarfFortress.ThrowError("InteractionTarget",
                                 "Bad InteractionBreathAttack " + RawFile.StripTokenEnding(split[3]) + "!");
                         BreathAttack = breathAttackType;
                         break;
@@ -400,7 +400,7 @@ namespace DwarfFortressXNA.Objects
             {
                 InteractionEffectFrequency freq;
                 if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out freq))
-                    throw new TokenParseException("InteractionEffect",
+                    DwarfFortress.ThrowError("InteractionEffect",
                         "Bad InteractionEffectFrequency " + RawFile.StripTokenEnding(split[1]) + "!");
                 Frequency = freq;
             }
@@ -412,7 +412,7 @@ namespace DwarfFortressXNA.Objects
             {
                 InteractionEffectLocation loc;
                 if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out loc))
-                    throw new TokenParseException("InteractionEffect",
+                    DwarfFortress.ThrowError("InteractionEffect",
                         "Bad InteractionEffectLocation " + RawFile.StripTokenEnding(split[1]) + "!");
                 Location = loc;
             }
@@ -463,7 +463,7 @@ namespace DwarfFortressXNA.Objects
                 if (tokenList[i].StartsWith("[I_SOURCE:"))
                 {
                     InteractionSourceType type;
-                    if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out type)) throw new TokenParseException("Interaction", "Bad InteractionSourceType " + RawFile.StripTokenEnding(split[1]) + "!");
+                    if (!Enum.TryParse(RawFile.StripTokenEnding(split[1]), out type)) DwarfFortress.ThrowError("Interaction", "Bad InteractionSourceType " + RawFile.StripTokenEnding(split[1]) + "!");
                     InteractionSources.Add(new InteractionSource(type));
                 }
                 else if (tokenList[i].StartsWith("[IS_HIST_STRING_1:") || tokenList[i].StartsWith("[IS_HIST_STRING_2:") ||
@@ -478,7 +478,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionTargetType type;
                     var name = split[1];
-                    if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out type)) throw new TokenParseException("Interaction", "Bad InteractionTargetType " + RawFile.StripTokenEnding(split[2]) + "!");
+                    if (!Enum.TryParse(RawFile.StripTokenEnding(split[2]), out type)) DwarfFortress.ThrowError("Interaction", "Bad InteractionTargetType " + RawFile.StripTokenEnding(split[2]) + "!");
                     InteractionTargets.Add(name, new InteractionTarget(type));
                     SelectedTarget = name;
                 }
@@ -497,7 +497,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     InteractionEffectType type;
                     var name = RawFile.StripTokenEnding(split[1]);
-                    if (!Enum.TryParse(name, out type)) throw new TokenParseException("Interaction", "Bad InteractionEffectType " + name + "!");
+                    if (!Enum.TryParse(name, out type)) DwarfFortress.ThrowError("Interaction", "Bad InteractionEffectType " + name + "!");
                     InteractionEffects.Add(new InteractionEffect(type));
                 }
                 else if (tokenList[i].StartsWith("[IE_TARGET:") || tokenList[i].StartsWith("[IE_INTERMITTENT:") ||

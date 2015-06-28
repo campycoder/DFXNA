@@ -101,7 +101,7 @@ namespace DwarfFortressXNA
         public static int FrameLimit = 100;
         public bool CursorOn = true;
 
-        private List<string> errorList; 
+        private static readonly List<string> ErrorList = new List<string>(); 
 
         //public static Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
         public static WorldObject World;
@@ -167,13 +167,15 @@ namespace DwarfFortressXNA
             }
             catch (TokenParseException e)
             {
-                if(errorList == null) errorList = new List<string>();
+
+            }
+// ReSharper restore UnusedVariable
+            if (ErrorList.Count > 0)
+            {
                 GameState = GameState.ERROR;
-                errorList.Add(e.Message);
                 SoundManager.SoundEnabled = false;
                 SoundManager.StopCurrentSong();
             }
-// ReSharper restore UnusedVariable
             World = new WorldObject(MapWidth, MapHeight, MapDepth, SurfaceDepth, new StandardWorldGen());
         }
 
@@ -214,7 +216,7 @@ namespace DwarfFortressXNA
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             //font = this.Content.Load<Texture2D>("./Data/curses_640x300");
-            FileStream fontStream = new FileStream("./Data/curses_640x300.png", FileMode.Open);
+            var fontStream = new FileStream("./Data/curses_640x300.png", FileMode.Open);
             font = Texture2D.FromStream(GraphicsDevice, fontStream);
             fontStream.Close();
             FontManager.SetCharSize(font.Width/16,font.Height/16);
@@ -430,7 +432,7 @@ namespace DwarfFortressXNA
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !EnterDebounce)
                 {
                     EnterDebounce = true;
-                    FileStream fontStream = new FileStream(FontList[SelectedFont], FileMode.Open);
+                    var fontStream = new FileStream(FontList[SelectedFont], FileMode.Open);
                     font = Texture2D.FromStream(GraphicsDevice, fontStream);
                     fontStream.Close();
                     FontManager.SetCharSize(font.Width / 16, font.Height / 16);
@@ -489,9 +491,9 @@ namespace DwarfFortressXNA
             if (GameState == GameState.ERROR)
             {
                 FontManager.DrawString("One or more errors were encountered when parsing RawFiles:",  spriteBatch, font, new Vector2(0,0), new ColorPair(ColorManager.Red, ColorManager.Black));
-                for (var i = 0; i < (errorList.Count > (Rows - 2) ? (Rows - 2) : errorList.Count); i++)
+                for (var i = 0; i < (ErrorList.Count > (Rows - 2) ? (Rows - 2) : ErrorList.Count); i++)
                 {
-                    FontManager.DrawString(errorList[i], spriteBatch, font, new Vector2(0,i+1), new ColorPair(ColorManager.LightRed, ColorManager.Black));
+                    FontManager.DrawString(ErrorList[i], spriteBatch, font, new Vector2(0,i+1), new ColorPair(ColorManager.LightRed, ColorManager.Black));
                 }
             }
             if(GameState == GameState.PLAYING)
@@ -532,7 +534,7 @@ namespace DwarfFortressXNA
                         }
                         switch (SidebarState)
                         {
-                                //WIDTH OF MAPBAR IS ~24 Characters
+                            //WIDTH OF MAPBAR IS ~24 Characters
                             case SidebarState.NONE:
                                 break;
                             case SidebarState.HALFBAR:
@@ -641,9 +643,14 @@ namespace DwarfFortressXNA
                     FontManager.DrawString(": Building", spriteBatch, font, new Vector2(Cols - (baseOffset - 3), 3), new ColorPair(ColorManager.LightGrey, ColorManager.Black));
                     break;
                 case FortressState.BUILDING:
-                    FontManager.DrawString("Motha-fuckin building!", spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.Red, ColorManager.Black));
+                    FontManager.DrawString("//TODO: Building Menu", spriteBatch, font, new Vector2(Cols - (baseOffset - 2), 2), new ColorPair(ColorManager.Red, ColorManager.Black));
                     break;
             }
+        }
+
+        public static void ThrowError(string sender, string message)
+        {
+            ErrorList.Add("["+sender+"]: " + message);
         }
 
         public void DrawMap()

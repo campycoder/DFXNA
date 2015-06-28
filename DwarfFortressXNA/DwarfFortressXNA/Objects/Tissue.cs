@@ -116,7 +116,7 @@ namespace DwarfFortressXNA.Objects
                 {
                     TissueShape tissueShape;
                     if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[1]), out tissueShape))
-                        throw new TokenParseException("Tissue", "Tissue Shape " +
+                        DwarfFortress.ThrowError("Tissue", "Tissue Shape " +
                                             RawFile.StripTokenEnding(tokenList[i].Split(new[] {':'})[1]) + " invalid!");
                     TissueShape = tissueShape;
                 }

@@ -91,8 +91,8 @@ namespace DwarfFortressXNA.Objects
                     BodyPartProperties propertyBuffer;
                     if (tokenList[i].StartsWith("[CONTYPE:"))
                     {
-                        if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)), out propertyBuffer)) throw new TokenParseException("Body Part", "Invalid connection type " + RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)) + "!");
-                        if (propertyBuffer != BodyPartProperties.UPPERBODY && propertyBuffer != BodyPartProperties.LOWERBODY && propertyBuffer != BodyPartProperties.HEAD && propertyBuffer != BodyPartProperties.GRASP && propertyBuffer != BodyPartProperties.STANCE) throw new TokenParseException("Body Part", "Bad connection type " + propertyBuffer + "!");
+                        if (!Enum.TryParse(RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)), out propertyBuffer)) DwarfFortress.ThrowError("Body Part", "Invalid connection type " + RawFile.StripTokenEnding(tokenList[i].Remove(0, 9)) + "!");
+                        if (propertyBuffer != BodyPartProperties.UPPERBODY && propertyBuffer != BodyPartProperties.LOWERBODY && propertyBuffer != BodyPartProperties.HEAD && propertyBuffer != BodyPartProperties.GRASP && propertyBuffer != BodyPartProperties.STANCE) DwarfFortress.ThrowError("Body Part", "Bad connection type " + propertyBuffer + "!");
                         ConnectionType = propertyBuffer;
                     }
                     else if (tokenList[i].StartsWith("[DEFAULT_RELSIZE"))
@@ -105,7 +105,7 @@ namespace DwarfFortressXNA.Objects
                     }
                     else if (tokenList[i].StartsWith("[INDIVIDUAL_NAME"))
                     {
-                        if (currentName == Number) throw new TokenParseException("Body Part", "Too many names defined! Only " + Number + " body parts!");
+                        if (currentName == Number) DwarfFortress.ThrowError("Body Part", "Too many names defined! Only " + Number + " body parts!");
                         if (IndividualNames == null)
                         {
                             IndividualNames = new List<string>();

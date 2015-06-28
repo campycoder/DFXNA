@@ -60,6 +60,7 @@ namespace DwarfFortressXNA.Objects
                 line = line.Replace("\t", "");
                 if (line.Length > 0 && line[0] == '[') TokensRaw.Add(line);
             }
+            file.Close();
             ParseStringsIntoTokens();
         }
 
@@ -89,13 +90,12 @@ namespace DwarfFortressXNA.Objects
                 case RawType.INTERACTION:
                     DwarfFortress.InteractionManager.ParseFromTokens(TokensRaw);
                     break;
-;            }
+            }
         }
 
         public static int GetIntFromToken(string number)
         {
-            if (number == "NONE") return 0;
-            return Convert.ToInt32(number);
+            return number == "NONE" ? 0 : Convert.ToInt32(number);
         }
 
         public static string StripTokenEnding(string token)
