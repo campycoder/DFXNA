@@ -344,6 +344,7 @@ namespace DwarfFortressXNA.Objects
             //The big one.
             //Three hundred and some odd tokens to be parsed.
             //Started 2015-05-04
+            //Edit c. 2016-06-28 - forgot to mention some tokens are in the Caste file, and it's not nearly done yet!
             for (var i = 0; i < tokenList.Count; i++)
             {
                 var split = tokenList[i].Split(new[] {':'});
@@ -597,7 +598,7 @@ namespace DwarfFortressXNA.Objects
                     if(!MaterialList.ContainsKey(oldMaterialName)) DwarfFortress.ThrowError(referenceName, "Old material " + oldMaterialName + " does not exist!");
                     var newMaterialName = split[1];
                     if(MaterialList.ContainsKey(newMaterialName)) DwarfFortress.ThrowError(referenceName, "Material " + newMaterialName + " has already been defined!");
-                    Material newMaterial = MaterialList[oldMaterialName];
+                    var newMaterial = MaterialList[oldMaterialName];
                     MaterialList.Add(newMaterialName, newMaterial);
                 }
                 else if (tokenList[i].StartsWith("[USE_MATERIAL_TEMPLATE:"))
@@ -606,7 +607,7 @@ namespace DwarfFortressXNA.Objects
                     if(!DwarfFortress.MaterialManager.MaterialTemplateList.ContainsKey(materialTemplateName)) DwarfFortress.ThrowError(referenceName, "Material template " + materialTemplateName + " hasn't been defined or parsed!");
                     var newMaterialName = split[1];
                     if(MaterialList.ContainsKey(newMaterialName)) DwarfFortress.ThrowError(referenceName, "Material " + newMaterialName + " has already been defined!");
-                    Material newMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[materialTemplateName];
+                    var newMaterial = DwarfFortress.MaterialManager.MaterialTemplateList[materialTemplateName];
                     MaterialList.Add(newMaterialName, newMaterial);
                 }
                 else if (tokenList[i] == "[USE_CASTE:")

@@ -125,8 +125,6 @@ namespace DwarfFortressXNA
             CreatureManager = new CreatureManager();
             AnnouncementManager = new AnnouncementManager();
             InteractionManager = new InteractionManager();
-            FontList = new List<string>();
-            FontList = Directory.GetFiles("./Data/", "*.png").ToList();
             for (var i = 0; i < 500; i++)
             {
                 var announcementType = (AnnouncementType)Random.Next(89, 94);
@@ -145,8 +143,6 @@ namespace DwarfFortressXNA
             TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 1000/FrameLimit);
             Window.Title = "Dwarf Fortress";
 // ReSharper disable UnusedVariable
-            try
-            {
                 var rawFile = new RawFile("./Raw/Objects/language_words.txt");
                 var rawFileH = new RawFile("./Raw/Objects/language_HUMAN.txt");
                 var rawFileD = new RawFile("./Raw/Objects/language_DWARF.txt");
@@ -164,11 +160,6 @@ namespace DwarfFortressXNA
                 var rawFileBc = new RawFile("./Raw/Objects/body_rcp.txt");
                 var rawFileBp = new RawFile("./Raw/Objects/b_detail_plan_default.txt");
                 var rawFileSpider = new RawFile("./Raw/Objects/creature_ggcs.txt");
-            }
-            catch (TokenParseException e)
-            {
-
-            }
 // ReSharper restore UnusedVariable
             if (ErrorList.Count > 0)
             {
@@ -474,6 +465,7 @@ namespace DwarfFortressXNA
         {
             if (stateToChange == GameState) return;
             SoundManager.StopCurrentSong();
+            if (stateToChange == GameState.FONTSELECT) FontList = Directory.GetFiles("./Data/", "*.png").ToList();
             SoundManager.PlaySong(stateToChange == GameState.MENU ? "TITLE_SONG" : "GAME_SONG");
             GameState = stateToChange;
             selection = 0;
@@ -595,9 +587,9 @@ namespace DwarfFortressXNA
             }
             else if (GameState == GameState.FONTTEST)
             {
-                for (int s = 0; s < 2; s++)
+                for (var s = 0; s < 2; s++)
                 {
-                    for (int i = 0; i < 8; i++)
+                    for (var i = 0; i < 8; i++)
                     {
                         FontManager.FontTest(spriteBatch, font, new Vector2(0 + i*16, 0 + s*16), FontManager.ColorManager.GetPairFromTriad(i, 0, s));
                     }
@@ -607,9 +599,9 @@ namespace DwarfFortressXNA
             }
             else if (GameState == GameState.FONTSELECT)
             {
-                for (int i = 0; i < FontList.Count; i++)
+                for (var i = 0; i < FontList.Count; i++)
                 {
-                    FontManager.DrawString(FontList[i],spriteBatch, font, new Vector2(0,0+i), FontManager.ColorManager.GetPairFromTriad(7,0,SelectedFont == i ? 1 : 0));
+                    FontManager.DrawString(FontList[i].Replace("./Data/","").Replace(".png",""),spriteBatch, font, new Vector2(0,0+i), FontManager.ColorManager.GetPairFromTriad(7,0,SelectedFont == i ? 1 : 0));
                 }
             }
             else if(GameState == GameState.MENU)
