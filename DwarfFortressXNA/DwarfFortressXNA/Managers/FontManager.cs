@@ -9,7 +9,13 @@ namespace DwarfFortressXNA.Managers
 {
     public class FontManager
     {
+        /// <summary>
+        /// Instance of ColorManager - used for deciphering color combinations or accessing base colors raw.
+        /// </summary>
         public ColorManager ColorManager;
+        /// <summary>
+        /// An array of chars aligned according to the IBM 437 standards.
+        /// </summary>
         public char[] Codepage =
         {   
             ' ', '☺', '☻', '♥', '♦', '♣', '♠', '•', '◘', '○', '◙', '♂', '♀', '♪', '♫', '☼',
@@ -29,20 +35,39 @@ namespace DwarfFortressXNA.Managers
             'α', 'ß', 'Γ', 'π', 'Σ', 'σ', 'µ', 'τ', 'Φ', 'Θ', 'Ω', 'δ', '∞', 'φ', 'ε', '∩',
             '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈', '°', '∙', '·', '√', 'ⁿ', '²', '■', ' '
         };
-
+        /// <summary>
+        /// Width of a character in the current font image.
+        /// </summary>
         public int CharSizeX = 8;
+        /// <summary>
+        ///  Height of a character in the current font image.
+        /// </summary>
         public int CharSizeY = 12;
         public FontManager()
         {
             ColorManager = new ColorManager();
         }
 
+        /// <summary>
+        /// Internal function - used to set the character sizes on font changes/initialization.
+        /// </summary>
+        /// <param name="x">Width of character.</param>
+        /// <param name="y">Height of character.</param>
         public void SetCharSize(int x, int y)
         {
             CharSizeX = x;
             CharSizeY = y;
         }
 
+        /// <summary>
+        /// Draw text in a text-box, along with instructions for closing it. Locks input and pauses game until box is cleared.
+        /// </summary>
+        /// <param name="toDraw">String to render.</param>
+        /// <param name="spriteBatch">SpriteBatch to render on.</param>
+        /// <param name="font">Image of font to utilize.</param>
+        /// <param name="position">Position of textbox.</param>
+        /// <param name="size">Size of textbox.</param>
+        /// <param name="colorPair">Pair of colours for text within textbox.</param>
         public void DrawBoxedText(string toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, Vector2 size,
             ColorPair colorPair)
         {
@@ -85,6 +110,14 @@ namespace DwarfFortressXNA.Managers
             DwarfFortress.FontManager.DrawString("to close window", spriteBatch, font, new Vector2(position.X + 14, position.Y + size.Y), new ColorPair(ColorManager.White, ColorManager.Black));
         }
 
+        /// <summary>
+        /// Renders a string of characters to the screen at a position in a certain colour.
+        /// </summary>
+        /// <param name="toDraw">String to render.</param>
+        /// <param name="spriteBatch">SpriteBatch to render on.</param>
+        /// <param name="font">Image of font to utilize.</param>
+        /// <param name="position">Position of string.</param>
+        /// <param name="colorPair">Pair of colours for text rendered.</param>
         public void DrawString(string toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
             if (toDraw == null) return;
@@ -93,7 +126,14 @@ namespace DwarfFortressXNA.Managers
                 DrawCharacter(toDraw[i], spriteBatch, font, new Vector2(position.X + i, position.Y), colorPair);
             }
         }
-
+        /// <summary>
+        /// Internal function. Used to render an individual character - (hopefully)rarely used outside of the basemost functions for rendering.
+        /// </summary>
+        /// <param name="toDraw">Character to render.</param>
+        /// <param name="spriteBatch">SpriteBatch to render on.</param>
+        /// <param name="font">Image of font to utilize.</param>
+        /// <param name="position">Position of character.</param>
+        /// <param name="colorPair">Pair of colours for the character rendered.</param>
         public void DrawCharacter(char toDraw, SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
             var backSpot = GetPositionFromCharacter('█');
@@ -102,6 +142,11 @@ namespace DwarfFortressXNA.Managers
             spriteBatch.Draw(font, new Rectangle((int)position.X * CharSizeX, (int)position.Y * CharSizeY, CharSizeX, CharSizeY), new Rectangle((int)characterSpot.X * CharSizeX, (int)characterSpot.Y * CharSizeY, CharSizeX, CharSizeY), colorPair.Foreground);
         }
 
+        /// <summary>
+        /// Extracts a character from a token argument, either in integer form or single-quote delimited form.
+        /// </summary>
+        /// <param name="token">Token to break down.</param>
+        /// <returns></returns>
         public char GetCharFromToken(string token)
         {
             var split = token.Split(new[] {':'});
@@ -111,6 +156,13 @@ namespace DwarfFortressXNA.Managers
             return strippedChar[0];
         }
 
+        /// <summary>
+        /// Renders a font test square - goes through each character in the codepage in a requested colour.
+        /// </summary>
+        /// <param name="spriteBatch">SpriteBatch to render on.</param>
+        /// <param name="font">Image of font to utilize.</param>
+        /// <param name="position">Position to render font test square..</param>
+        /// <param name="colorPair">Pair of colours for text of the square.</param>
         public void FontTest(SpriteBatch spriteBatch, Texture2D font, Vector2 position, ColorPair colorPair)
         {
             for (int i = 0; i < 256; i++)
@@ -119,6 +171,12 @@ namespace DwarfFortressXNA.Managers
             }
         }
 
+        /// <summary>
+        /// Long, horrifyingly long function to determine where in the codepage a certain character is.
+        /// USE SPARINGLY: This needs some serious optimization!
+        /// </summary>
+        /// <param name="character">Character to find.</param>
+        /// <returns>Position of the character requested in the IBM 437 codepage.</returns>
         public Vector2 GetPositionFromCharacter(char character)
         {
             var rowX = 0;
@@ -131,11 +189,13 @@ namespace DwarfFortressXNA.Managers
                    rowY = (int)Math.Floor((double)i / 16);
                 }
             }*/
+            //ASCII? Just use that!
             if(character >= 0x20 && character < 0x80)
             {
                 rowX = character % 16;
                 rowY = (int)Math.Floor((double)(character / 16));
             }
+            //Not ASCII? We're boned.
             else
             {
                 //Ugly switch statement for those things unsolveable by convential (i.e. midnight) math

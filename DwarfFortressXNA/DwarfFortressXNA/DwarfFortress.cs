@@ -39,9 +39,10 @@ namespace DwarfFortressXNA
         ANNOUNCEMENTS
     }
     /// <summary>
-    /// This is the main type for your game
+    /// Main, sometimes static-accessed class for the game. Holds data that is 
+    /// either pivotal for base handling/rendering or needs to be accessed
+    /// globally.
     /// </summary>
-    /// 
     public class DwarfFortress : Game
     {
         readonly GraphicsDeviceManager graphics;
@@ -103,7 +104,6 @@ namespace DwarfFortressXNA
 
         private static readonly List<string> ErrorList = new List<string>(); 
 
-        //public static Tile[,,] MaterialMap = new Tile[MapWidth,MapHeight,MapDepth];
         public static WorldObject World;
 
         int frames;
