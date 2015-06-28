@@ -16,7 +16,7 @@
     <XnaProfile>Reach</XnaProfile>
     <XnaCrossPlatformGroupID>211bdc50-de59-451c-9273-c10c65c54c90</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
-    <ApplicationIcon>Game.ico</ApplicationIcon>
+    <ApplicationIcon>dfico.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -98,6 +98,7 @@
     <Compile Include="Managers\LanguageManager.cs" />
     <Compile Include="Objects\Interaction.cs" />
     <Compile Include="Objects\InteractionUsage.cs" />
+    <Compile Include="Objects\Item.cs" />
     <Compile Include="Objects\Material.cs" />
     <Compile Include="Managers\MaterialManager.cs" />
     <Compile Include="Objects\Tile.cs" />
@@ -109,10 +110,12 @@
     <Compile Include="Managers\TissueManager.cs" />
     <Compile Include="Objects\Word.cs" />
     <Compile Include="World\GenerationModule.cs" />
+    <Compile Include="World\OreVein.cs" />
     <Compile Include="World\StandardWorldGen.cs" />
     <Compile Include="World\WorldObject.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dfico.ico" />
     <Content Include="Game.ico" />
     <Content Include="GameThumbnail.png">
       <XnaPlatformSpecific>true</XnaPlatformSpecific>

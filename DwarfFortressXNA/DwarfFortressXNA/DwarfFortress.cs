@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using DwarfFortressXNA.Managers;
 using DwarfFortressXNA.Objects;
 using DwarfFortressXNA.World;
@@ -26,6 +27,7 @@ namespace DwarfFortressXNA
         MENU,
         WORLDGEN,
         FONTTEST,
+        FONTSELECT,
         PLAYING,
         ERROR
     }
@@ -52,9 +54,11 @@ namespace DwarfFortressXNA
         public bool Pdebounce = false;
         public bool EscDebounce = false;
         public bool TabDebounce = false;
+        public bool EnterDebounce = false;
 
         int selection;
         bool arrowDeb;
+        
 
         public static FontManager FontManager;
         public static LanguageManager LanguageManager;
@@ -79,6 +83,10 @@ namespace DwarfFortressXNA
         public static int MapWidth = 192;
         public static int MapDepth = 100;
         public static int SurfaceDepth = 10;
+
+        public List<string> FontList;
+
+        public int SelectedFont = 0;
 
         public int CursorX = 1;
         public int CursorY = 1;
@@ -117,6 +125,8 @@ namespace DwarfFortressXNA
             CreatureManager = new CreatureManager();
             AnnouncementManager = new AnnouncementManager();
             InteractionManager = new InteractionManager();
+            FontList = new List<string>();
+            FontList = Directory.GetFiles("./Data/", "*.png").ToList();
             for (var i = 0; i < 500; i++)
             {
                 var announcementType = (AnnouncementType)Random.Next(89, 94);
@@ -164,25 +174,6 @@ namespace DwarfFortressXNA
                 SoundManager.StopCurrentSong();
             }
 // ReSharper restore UnusedVariable
-            /*var materials = new List<Material>(MaterialManager.InorganicMaterialList.Values);
-            for (var x = 0; x < MapWidth; x++)
-            {
-                for(var y = 0; y < MapHeight;y++)
-                {
-                    for (var z = 0; z < MapDepth; z++)
-                    {
-                        var material = Random.Next(20) == 0 ? null : materials[Random.Next(materials.Count)];
-                        var random = Random.Next(101);
-                        /*var tile = random <= 25
-                            ? TileType.ROUGH_LAYER_STONE_FLOOR_1
-                            : random <= 50
-                                ? TileType.ROUGH_LAYER_STONE_FLOOR_2
-                                : random <= 75 ? TileType.ROUGH_LAYER_STONE_FLOOR_3 : TileType.ROUGH_LAYER_STONE_FLOOR_4;
-                        var tile = TileType.ROUGH_LAYER_STONE_WALL;
-                        MaterialMap[x, y, z] = new Tile(material, (material == null ? TileType.EMPTY : tile), new Vector3(x, y, z));
-                    } 
-                }
-            }*/
             World = new WorldObject(MapWidth, MapHeight, MapDepth, SurfaceDepth, new StandardWorldGen());
         }
 
@@ -223,7 +214,9 @@ namespace DwarfFortressXNA
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             //font = this.Content.Load<Texture2D>("./Data/curses_640x300");
-            font = Texture2D.FromStream(GraphicsDevice, new FileStream("./Data/curses_800x600.png", FileMode.Open));
+            FileStream fontStream = new FileStream("./Data/curses_640x300.png", FileMode.Open);
+            font = Texture2D.FromStream(GraphicsDevice, fontStream);
+            fontStream.Close();
             FontManager.SetCharSize(font.Width/16,font.Height/16);
             graphics.PreferredBackBufferHeight = (Rows * FontManager.CharSizeY);
             graphics.PreferredBackBufferWidth = (Cols * FontManager.CharSizeX);
@@ -242,6 +235,7 @@ namespace DwarfFortressXNA
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
+        /// 
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
@@ -420,22 +414,56 @@ namespace DwarfFortressXNA
                     if (Keyboard.GetState().IsKeyDown(Keys.Enter)) BoxLocked = false;
                 }
             }
+            if (GameState == GameState.FONTSELECT)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Up) && !arrowDeb && SelectedFont > 0)
+                {
+                    SelectedFont--;
+                    arrowDeb = true;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && !arrowDeb && SelectedFont < FontList.Count-1)
+                {
+                    SelectedFont++;
+                    arrowDeb = true;
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Up) && Keyboard.GetState().IsKeyUp(Keys.Down) && arrowDeb) arrowDeb = false;
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !EnterDebounce)
+                {
+                    EnterDebounce = true;
+                    FileStream fontStream = new FileStream(FontList[SelectedFont], FileMode.Open);
+                    font = Texture2D.FromStream(GraphicsDevice, fontStream);
+                    fontStream.Close();
+                    FontManager.SetCharSize(font.Width / 16, font.Height / 16);
+                    graphics.PreferredBackBufferHeight = (Rows * FontManager.CharSizeY);
+                    graphics.PreferredBackBufferWidth = (Cols * FontManager.CharSizeX);
+                    graphics.ApplyChanges();
+                    SelectedFont = 0;
+                    GameStateChange(GameState.MENU);
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Enter) && EnterDebounce) EnterDebounce = false;
+            }
             if(GameState == GameState.MENU)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 0) GameStateChange(GameState.PLAYING);
-                if(Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 1) GameStateChange(GameState.FONTTEST);
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 2) Exit();
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 0 && !EnterDebounce) GameStateChange(GameState.PLAYING);
+                if(Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 1 && !EnterDebounce) GameStateChange(GameState.FONTTEST);
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 2 && !EnterDebounce)
+                {
+                    EnterDebounce = true;
+                    GameStateChange(GameState.FONTSELECT);
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && selection == 3) Exit();
                 if (Keyboard.GetState().IsKeyDown(Keys.Up) && !arrowDeb && selection > 0)
                 {
                     selection--;
                     arrowDeb = true;
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.Down) && !arrowDeb && selection < 2)
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && !arrowDeb && selection < 3)
                 {
                     selection++;
                     arrowDeb = true;
                 }
                 if (Keyboard.GetState().IsKeyUp(Keys.Up) && Keyboard.GetState().IsKeyUp(Keys.Down) && arrowDeb) arrowDeb = false;
+                if (Keyboard.GetState().IsKeyUp(Keys.Enter) && EnterDebounce) EnterDebounce = false;
             }
             base.Update(gameTime);
         }
@@ -575,6 +603,13 @@ namespace DwarfFortressXNA
                 
                 
             }
+            else if (GameState == GameState.FONTSELECT)
+            {
+                for (int i = 0; i < FontList.Count; i++)
+                {
+                    FontManager.DrawString(FontList[i],spriteBatch, font, new Vector2(0,0+i), FontManager.ColorManager.GetPairFromTriad(7,0,SelectedFont == i ? 1 : 0));
+                }
+            }
             else if(GameState == GameState.MENU)
             {
                 FontManager.DrawString("Slaves to Armok:  God of Blood", spriteBatch, font, new Vector2(Cols/2 - 15, 2), FontManager.ColorManager.GetPairFromTriad(4, 0, 1));
@@ -582,7 +617,8 @@ namespace DwarfFortressXNA
                 FontManager.DrawString("(XNA EDITION)", spriteBatch, font, new Vector2(Cols/2 - 6, 5), FontManager.ColorManager.GetPairFromTriad(6, 6, 1));
                 FontManager.DrawString("Look at Something", spriteBatch, font, new Vector2(Cols/2 - 8, 10), FontManager.ColorManager.GetPairFromTriad(7, 0, selection == 0 ? 1 : 0));
                 FontManager.DrawString("Look at Something Else", spriteBatch, font, new Vector2(Cols/2 - 10, 12), FontManager.ColorManager.GetPairFromTriad(7,0,selection == 1 ? 1: 0));
-                FontManager.DrawString("Exit", spriteBatch, font, new Vector2(Cols/2 - 1, 14), FontManager.ColorManager.GetPairFromTriad(7, 0, selection == 2 ? 1 : 0));
+                FontManager.DrawString("Font Selection", spriteBatch, font, new Vector2(Cols/2 - 6, 14), FontManager.ColorManager.GetPairFromTriad(7,0,selection == 2 ? 1 : 0));
+                FontManager.DrawString("Exit", spriteBatch, font, new Vector2(Cols/2 - 1, 16), FontManager.ColorManager.GetPairFromTriad(7, 0, selection == 3 ? 1 : 0));
             }
             FontManager.DrawString("XNA Beta Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, spriteBatch, font, new Vector2(0, Rows-1), FontManager.ColorManager.GetPairFromTriad(5, 0, 1));
             spriteBatch.End();

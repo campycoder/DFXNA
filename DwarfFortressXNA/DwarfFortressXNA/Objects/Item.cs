@@ -1,11 +1,103 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace DwarfFortressXNA.Objects
+﻿namespace DwarfFortressXNA.Objects
 {
-    class Item
+    public enum ItemCategory
     {
+        BAR,
+        SMALLGEM,
+        BLOCKS,
+        ROUGH,
+        BOULDER,
+        WOOD,
+        DOOR,
+        FLOODGATE,
+        BED,
+        CHAIR,
+        CHAIN,
+        FLASK,
+        GOBLET,
+        INSTRUMENT,
+        TOY,
+        WINDOW,
+        CAGE,
+        BARREL,
+        BUCKET,
+        ANIMALTRAP,
+        TABLE,
+        COFFIN,
+        STATUE,
+        CORPSE,
+        WEAPON,
+        ARMOR,
+        SHOES,
+        SHIELD,
+        HELM,
+        GLOVES,
+        BOX,
+        BIN,
+        ARMORSTAND,
+        WEAPONRACK,
+        CABINET,
+        FIGURINE,
+        AMULET,
+        SCEPTER,
+        AMMO,
+        CROWN,
+        RING,
+        EARRING,
+        BRACELET,
+        GEM,
+        ANVIL,
+        CORPSEPIECE,
+        REMAINS,
+        MEAT,
+        FISH,
+        FISH_RAW,
+        VERMIN,
+        PET,
+        SEEDS,
+        PLANT,
+        SKIN_TANNED,
+        PLANT_GROWTH,
+        THREAD,
+        CLOTH,
+        TOTEM,
+        PANTS,
+        BACKPACK,
+        QUIVER,
+        CATAPULTPARTS,
+        BALLISTAPARTS,
+        SIEGEAMMO,
+        BALLISTAARROWHEAD,
+        TRAPPARTS,
+        TRAPCOMP,
+        DRINK,
+        POWDER_MISC,
+        CHEESE,
+        FOOD,
+        LIQUID_MISC,
+        COIN,
+        GLOB,
+        ROCK,
+        PIPE_SECTION,
+        HATCH_COVER,
+        GRATE,
+        QUERN,
+        MILLSTONE,
+        SPLINT,
+        CRUTCH,
+        TRACTION_BENCH,
+        ORTHOPEDIC_CAST,
+        TOOL,
+        SLAB,
+        EGG,
+        BOOK
+
+    }
+    public class Item
+    {
+        public Item()
+        {
+            
+        }
     }
 }
