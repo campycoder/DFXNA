@@ -3,7 +3,9 @@ using Microsoft.Xna.Framework;
 
 namespace DwarfFortressXNA.Managers
 {
-
+    /// <summary>
+    /// Enum for addressing colours - organized w/ Hue + Brightness*8.
+    /// </summary>
     public enum ColorRaw
     {
         BLACK,
@@ -23,9 +25,19 @@ namespace DwarfFortressXNA.Managers
         YELLOW,
         WHITE
     }
+
+    /// <summary>
+    /// Structure for handling pairs of colours.
+    /// </summary>
     public struct ColorPair
     {
+        /// <summary>
+        /// Foreground colour - colours the text.
+        /// </summary>
         public Color Foreground;
+        /// <summary>
+        /// Background colour - colours the text's backing.
+        /// </summary>
         public Color Background;
         public ColorPair(Color fore, Color back)
         {
@@ -52,6 +64,9 @@ namespace DwarfFortressXNA.Managers
         public static Color Yellow;
         public static Color White;
 
+        /// <summary>
+        /// List of colours - organized w/ Hue + Brightness*8.
+        /// </summary>
         public static List<Color> ColorList;
 
         public ColorManager()
@@ -93,6 +108,13 @@ namespace DwarfFortressXNA.Managers
             };
         }
 
+        /// <summary>
+        /// Deciphers an integer triad used in RawFiles to represent colours.
+        /// </summary>
+        /// <param name="fore">Foreground colour value. Affected by foreground brightness.</param>
+        /// <param name="back">Background colour value. Unaffected by foreground brightness.</param>
+        /// <param name="foreb">Foreground brightness - "lightens" the foreground colour.</param>
+        /// <returns></returns>
         public ColorPair GetPairFromTriad(int fore, int back, int foreb)
         {
             return new ColorPair(ColorList[fore + (foreb * 8)], ColorList[back]);
